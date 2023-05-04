@@ -11,8 +11,6 @@
         }
     ],
     "javascript": [
-        "~/App_Plugins/UmbracoCommerceCheckout/backoffice/resources/uccheckout.resource.js",
-        "~/App_Plugins/UmbracoCommerceCheckout/backoffice/views/dashboards/installer.controller.js",
-        "~/App_Plugins/UmbracoCommerceCheckout/backoffice/views/dialogs/installer.controller.js"
+        "~/App_Plugins/UmbracoCommerceCheckout/backoffice/js/uccheckout.js"
     ]
 }

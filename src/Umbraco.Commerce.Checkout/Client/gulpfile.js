@@ -1,14 +1,36 @@
 const gulp = require('gulp');
+const rename = require('gulp-rename');
+const concat = require('gulp-concat');
+const postcss = require('gulp-postcss');
 
-const { paths } = require('./config');
+const argv = require('minimist')(process.argv.slice(2));
 
-const copy = () => gulp.src(paths.src).pipe(gulp.dest(paths.dest));
+const srcPath = './src';
+const backofficePath = './src/backoffice';
+const outputPath = argv['output-path'] || require('./config.outputPath.js').outputPath;
 
-const css = () => {
-  //return gulp.src(paths.js)
-  //  .pipe(gulp.dest(`${paths.dest}/backoffice/js`));
+const copy = () => {
+  return gulp.src([`${srcPath}/**/*.*`, `!${srcPath}/css/**/*.*`, `!${backofficePath}/**/*.js`])
+    .pipe(gulp.dest(outputPath))
+};
+
+const fe_css = () => {
+  return gulp.src('./src/css/main.css') 
+    .pipe(postcss([
+      require('tailwindcss'),
+      require('autoprefixer'),
+      //require('cssnano')({
+      //  preset: 'default',
+      //})
+    ]))
+    .pipe(rename('uccheckout.css'))
+    .pipe(gulp.dest(`${outputPath}/css`));
 }
 
-gulp.task('copy', copy);
+const be_js = () => {
+  return gulp.src([`${backofficePath}/**/*.js`])
+    .pipe(concat(`uccheckout.js`))
+    .pipe(gulp.dest(`${outputPath}/backoffice/js`));
+}
 
-exports.build = gulp.task('build', gulp.parallel(copy));
+exports.build = gulp.task('build', gulp.parallel(copy, be_js, fe_css));

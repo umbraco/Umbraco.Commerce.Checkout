@@ -16,7 +16,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
         public override PipelineResult<InstallPipelineContext> Execute(PipelineArgs<InstallPipelineContext> args)
         {
-            _commerceApi.Uow.Execute(uow =>
+            _commerceApi.Uow.Execute(uow => 
             {
                 if (!_commerceApi.PaymentMethodExists(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
                 {

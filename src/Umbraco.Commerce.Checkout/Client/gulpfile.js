@@ -19,9 +19,9 @@ const fe_css = () => {
     .pipe(postcss([
       require('tailwindcss'),
       require('autoprefixer'),
-      //require('cssnano')({
-      //  preset: 'default',
-      //})
+      require('cssnano')({
+       preset: 'default',
+      })
     ]))
     .pipe(rename('uccheckout.css'))
     .pipe(gulp.dest(`${outputPath}/css`));

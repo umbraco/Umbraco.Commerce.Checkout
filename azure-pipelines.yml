@@ -8,7 +8,7 @@ parameters:
 
 variables:
   nodeVersion: 18.x
-  solution: Umbraco.Commerce.Deploy.sln
+  solution: Umbraco.Commerce.Checkout.sln
   buildConfiguration: Release
   DOTNET_NOLOGO: true
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false

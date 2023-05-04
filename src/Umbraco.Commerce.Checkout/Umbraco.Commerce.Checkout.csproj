@@ -29,7 +29,7 @@
     <WriteLinesToFile File="Client\config.outputPath.js" Lines="exports.outputPath = '../$(IntermediateOutputPath.Replace('\', '/'))clientassets';" Overwrite="true" WriteOnlyWhenDifferent="true" />
   </Target>
   
-  <!-- Update package.manifest files with current build version after client assets build 
+  <!-- Update package.manifest files with current build version after client assets build -->
   <ItemGroup>
     <PackageReference Include="Umbraco.JsonSchema.Extensions" PrivateAssets="all" />
   </ItemGroup>
@@ -40,6 +40,5 @@
     </ItemGroup>
     <JsonPathUpdateValue JsonFile="%(_PackageManifestFiles.FullPath)" Path="$.version" Value="&quot;$(PackageVersion)&quot;" />
   </Target>
-  -->
   
 </Project>

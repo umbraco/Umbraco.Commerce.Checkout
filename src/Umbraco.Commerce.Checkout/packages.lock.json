@@ -70,6 +70,12 @@
         "resolved": "0.2.0",
         "contentHash": "m85a1RWGllvZxhw4SfnNyHszN9WDqQk6WGpR0Fzu2ZwEHCPesQPc+7NDl/PgUrVLyLDA9HqAasb2NEHqPffaCQ=="
       },
+      "Umbraco.JsonSchema.Extensions": {
+        "type": "Direct",
+        "requested": "[0.3.0, )",
+        "resolved": "0.3.0",
+        "contentHash": "pvgnrC9vQ/3GvYvAwhLHvqwMgyvndHtKi+io77cMNuY+e/eR0eBV5SyzXmW5q3MFnbV4AizdjZIsuoMszY7mxA=="
+      },
       "Azure.Core": {
         "type": "Transitive",
         "resolved": "1.6.0",

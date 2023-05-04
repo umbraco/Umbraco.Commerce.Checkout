@@ -1,0 +1,236 @@
+@inherits UmbracoViewPage
+@{
+    Layout = null;
+    
+    var finalized = (bool)(ViewData["finalized"] ?? false);
+    var canGoBack = (bool)(ViewData["canGoBack"] ?? true);
+
+    var store = Model.GetStore();
+
+    var currentOrder = !finalized
+        ? UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id)
+        : UmbracoCommerceApi.Instance.GetCurrentFinalizedOrder(store.Id);
+
+    var currentPaymentMethod = currentOrder.PaymentInfo.PaymentMethodId.HasValue
+        ? UmbracoCommerceApi.Instance.GetPaymentMethod(currentOrder.PaymentInfo.PaymentMethodId.Value)
+        : null;
+
+    var checkoutPage = Model.GetCheckoutPage();
+
+    var themeColor = Model.GetThemeColor();
+
+}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>@(Model.Name) | @(store.Name)</title>
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link href="/app_plugins/umbracocommercecheckout/css/uccheckout.css" rel="stylesheet">
+    @RenderSection("head", false)
+</head>
+<body>
+    <div class="relative text-sm">
+
+        <!-- Faux column -->
+        <div class="absolute right-0 w-1/2 h-full lg:bg-gray-50"></div>
+
+        <!-- Layout -->
+        <div class="relative flex flex-col min-h-full max-w-6xl mx-auto lg:flex-row-reverse lg:flex-row">
+
+            <div class="bg-white p-8 text-center lg:hidden">
+                @if (checkoutPage.HasValue("uccStoreLogo"))
+                {
+                    <a href="/"><img src="@Html.Raw(Url.GetCropUrl(checkoutPage.Value<IPublishedContent>("uccStoreLogo"), 200, 200, imageCropMode: ImageCropMode.Max))" class="inline-block" alt="@(store.Name)" /></a>
+                }
+                else
+                {
+                    <h1 class="text-3xl font-bold"><a href="/">@(store.Name)</a></h1>
+                }
+            </div>
+
+            <a id="order-summary-toggle" href="#" class="flex items-center justify-between border-t border-b border-gray-300 bg-gray-50 lg:hidden"> 
+                <span class="py-4 pl-8 pr-2 text-lg">
+                    <span id="order-summary-toggle__text-closed" class="flex items-center"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.ShowSummary", "Show Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-down" /></svg></span>
+                    <span id="order-summary-toggle__text-open" class="flex items-center hidden"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.HideSummary", "Hide Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-up" /></svg></span>
+                </span>
+                <span class="py-4 pr-8 pl-2 text-lg font-medium">
+                    @currentOrder.TransactionAmount.Value.Formatted()
+                </span>
+            </a>
+
+            <div id="order-summary" class="hidden bg-gray-50 w-full p-8 lg:w-2/5 lg:border-l lg:block">
+
+                <ul>
+                    @foreach (var orderLine in currentOrder.OrderLines)
+                    {
+                        <li class="border-b border-gray-300 pb-4 mb-4">
+                            <div class="flex items-center">
+
+                                <div class="flex flex-1 items-center">
+                                    <div><span class="font-medium">@(orderLine.Name) x @((int)orderLine.Quantity)</span><br /><span class="text-xs text-gray-500">@(orderLine.Sku)</span></div>
+                                </div>
+
+                                <div class="pl-4 font-medium">@(orderLine.TotalPrice.Value.Formatted().WithoutTax)</div>
+
+                            </div>
+                        </li>
+                    }
+                </ul>
+
+                @RenderSection("aside", false)
+
+                <div class="flex w-full justify-between items-center">
+                    <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Subtotal", "Subtotal")</div>
+                    <div class="font-medium">@(currentOrder.SubtotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
+                </div>
+
+                @if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
+                {
+                    var currentShippingMethod = currentOrder.ShippingInfo.ShippingMethodId.HasValue
+                        ? UmbracoCommerceApi.Instance.GetShippingMethod(currentOrder.ShippingInfo.ShippingMethodId.Value)
+                        : null;
+
+                    if (currentShippingMethod != null)
+                    {
+                        <div class="flex w-full justify-between items-center mt-2">
+                            <div class="">
+                                @string.Format(Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.ShippingVia", "Shipping via {0}"), currentShippingMethod.Name)
+                            </div>
+                            <div class="font-medium">@(currentOrder.ShippingInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
+                        </div>
+                    }
+                }
+
+                @if (currentPaymentMethod != null && currentPaymentMethod.PaymentProviderAlias != "zeroValue")
+                {
+                    <div class="flex w-full justify-between items-center mt-2">
+                        <div class="">
+                            @string.Format(Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.PaymentVia", "Payment via {0}"), currentPaymentMethod.Name)
+                        </div>
+                        <div class="font-medium">@(currentOrder.PaymentInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
+                    </div>
+                }
+
+                @{
+                    var totalDiscounts = currentOrder.GetTotalPriceAdjustmentByType<DiscountAdjustment>();
+                    if (totalDiscounts != 0)
+                    {
+                        <div class="flex w-full justify-between items-center mt-2 ">
+                            <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Discounts", "Discounts")</div>
+                            <div class="font-medium">@totalDiscounts.Formatted().WithoutTax</div>
+                        </div>
+                    }
+                }
+
+                <div class="flex w-full justify-between items-center mt-2">
+                    <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Tax", "Tax")</div>
+                    <div class="font-medium">@(currentOrder.TotalPrice.Value.Formatted().Tax)</div>
+                </div>
+
+                @foreach (var giftCardAdjustment in currentOrder.TransactionAmount.Adjustments.OfType<GiftCardAdjustment>())
+                {
+                    <div class="flex w-full justify-between items-center mt-2">
+                        <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.GiftCard", "Gift Card") (@(giftCardAdjustment.GiftCardCode))</div>
+                        <div class="font-medium">-@(giftCardAdjustment.Amount.Formatted())</div>
+                    </div>
+                }
+
+                <hr class="border-t border-gray-300 my-4" />
+
+                <div class="flex w-full justify-between items-center">
+                    <div class="font-medium text-base">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Total", "Total")</div>
+                    <div class="font-medium text-2xl">@currentOrder.TransactionAmount.Value.Formatted()</div>
+                </div>
+
+            </div>
+
+            <div class="bg-white flex-1 p-8">
+
+                <div class="hidden lg:block">
+
+                    <div class="text-center mb-4">
+                        @if (checkoutPage.HasValue("uccStoreLogo"))
+                        {
+                            <a href="/"><img src="@Html.Raw(Url.GetCropUrl(checkoutPage.Value<IPublishedContent>("uccStoreLogo"), 200, 100, imageCropMode: ImageCropMode.Max))" class="inline-block" alt="@(store.Name)" /></a>
+
+                        }
+                        else
+                        {
+                            <h1 class="text-3xl font-bold"><a href="/">@(store.Name)</a></h1>
+                        }
+                    </div>
+
+                    <div class="mb-8">
+                        <ul class="flex justify-center">
+                            @{
+                                var passedStep = false;
+                                foreach (var item in checkoutPage.Children
+                                    .Where(x => checkoutPage.Value<bool>("uccCollectShippingInfo") || x.Value<string>("uccStepType") != "ShippingMethod")
+                                    .Select((s, i) => new { Step = s, Index = i }))
+                                {
+                                    <li class="@(item.Index > 0 ? "pl-2" : "") flex items-baseline">
+                                        @if (item.Index > 0)
+                                        {
+                                            <span class="text-gray-500 mr-2">&rsaquo;</span>
+                                        }
+                                        @if (!passedStep && item.Step.Id != Model.Id && canGoBack)
+                                        {
+                                            <a href="@item.Step.Url()" class="hover:text-@(themeColor)">@(item.Step.Value<string>("uccShortStepName", defaultValue: item.Step.Name))</a>
+                                        }
+                                        else
+                                        {
+                                            <span class="@(item.Step.Id == Model.Id ? "font-bold" : "")">@(item.Step.Value<string>("uccShortStepName", defaultValue: item.Step.Name))</span>
+                                        }
+                                    </li>
+                                    passedStep = passedStep || item.Step.Id == Model.Id;
+                                }
+                            }
+                        </ul>
+                    </div>
+
+                </div>
+
+                @Html.ValidationSummary(true, "", new { @class = "bg-red-500 text-white p-4 rounded mb-4" })
+
+                @RenderBody()
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Sprites -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="hidden">
+        <symbol id="ico-cart" viewBox="0 0 20 20">
+            <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+        </symbol>
+        <symbol id="ico-check" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </symbol>
+        <symbol id="ico-delete" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </symbol>
+        <symbol id="ico-chevron-left" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </symbol>
+        <symbol id="ico-chevron-right" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+        </symbol>
+        <symbol id="ico-chevron-up" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </symbol>
+        <symbol id="ico-chevron-down" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </symbol>
+    </svg>
+
+    <script src="/app_plugins/umbracocommercecheckout/scripts/uccheckout.js" defer></script>
+
+    @RenderSection("foot", false)
+
+</body>
+</html>

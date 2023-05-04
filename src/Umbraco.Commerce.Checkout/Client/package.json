@@ -1,0 +1,16 @@
+{
+    "name": "@umbraco/commerce-checkout",
+    "private": true,
+    "scripts": {
+        "build": "gulp build"
+    },
+    "engines": {
+        "node": ">=16.17",
+        "npm": ">=8.15"
+    },
+    "devDependencies": {
+        "gulp": "^4.0.2",
+        "minimist": "^1.2.8"
+    },
+    "dependencies": {}
+}

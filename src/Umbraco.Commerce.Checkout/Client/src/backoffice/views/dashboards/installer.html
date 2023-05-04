@@ -1,0 +1,39 @@
+<style>
+    .umb-dashboard__content {
+        position: relative;
+        min-height: 100%;
+    }
+</style>
+<div ng-controller="Umbraco.Commerce.Checkout.Controllers.InstallerDashboardController as vm" class="contentment umb-dashboards-forms-install ng-scope">
+    <div class="installer-wrapper" style="margin: 20px auto 0;">
+
+        <!-- Header -->
+        <div>
+            <div style="display: inline-flex; align-items: center; justify-content: center; background-color: #141432; width: 120px; height: 120px; border-radius: 100%;"><i class="icon icon-cash-register" style="color: white; font-size: 80px;"></i></div>
+        </div>
+        <div class="installer-intro" style="margin-bottom: 5px;">
+            <h3 style="margin-left: 0;">Checkout</h3>
+        </div>
+        <p>
+            Umbraco Commerce Checkout provides a ready made checkout flow for Umbraco Commerce
+        </p>
+
+        <!-- Installer -->
+        <h4 style="margin-top: 40px; font-weight: bold;">Getting Started</h4>
+        <p style="margin-bottom: 10px;">
+          To get started with Umbraco Commerce Checkout we first need to install all the related content.<br />
+          By clicking the <strong>Install</strong> button below Umbraco Commerce Checkout will install all the Data Types,<br />
+          Doc Types and Content nodes needed.
+        </p>
+        <p>
+          If you have installed Umbraco Commerce Checkout before, the installer will also perform the relevant upgrades.<br />
+          <br /><strong>NB: Nothing</strong> will be removed as part of an upgrade.
+        </p>
+        <p style="margin-top: 30px;">
+            <button type="button" class="btn btn-success" style="padding: 8px 20px; font-size: 18px;" ng-click="vm.openInstaller()">
+                Install
+            </button>
+        </p>
+
+    </div>
+</div>

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <Title>Umbraco Commerce Checkout</Title>
+    <Description>A drop in checkout solution for Umbraco Commerce.</Description>
+    <StaticWebAssetBasePath>App_Plugins/UmbracoCommerceCheckout</StaticWebAssetBasePath>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <EnableDefaultContentItems>false</EnableDefaultContentItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Web.Website" />
+    <PackageReference Include="Umbraco.Commerce.Cms.Startup" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="**/*.cshtml" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Build client assets using NPM -->
+  <Import Project="build\Microsoft.AspNetCore.ClientAssets.targets" />
+  
+  <Target Name="ClientAssetsBuildOutputPath" BeforeTargets="ClientAssetsBuild">
+    <WriteLinesToFile File="Client\config.outputPath.js" Lines="exports.outputPath = '../$(IntermediateOutputPath.Replace('\', '/'))clientassets';" Overwrite="true" WriteOnlyWhenDifferent="true" />
+  </Target>
+  
+  <!-- Update package.manifest files with current build version after client assets build 
+  <ItemGroup>
+    <PackageReference Include="Umbraco.JsonSchema.Extensions" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="UpdatePackageManifestVersion" DependsOnTargets="ClientAssetsBuild" AfterTargets="GetUmbracoBuildVersion">
+    <ItemGroup>
+      <_PackageManifestFiles Include="$(IntermediateOutputPath)clientassets\**\package.manifest" />
+    </ItemGroup>
+    <JsonPathUpdateValue JsonFile="%(_PackageManifestFiles.FullPath)" Path="$.version" Value="&quot;$(PackageVersion)&quot;" />
+  </Target>
+  -->
+  
+</Project>

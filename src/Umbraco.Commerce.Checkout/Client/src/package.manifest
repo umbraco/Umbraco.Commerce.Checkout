@@ -1,0 +1,18 @@
+{
+    "name": "Umbraco Commerce Checkout",
+    "version": "",
+    "bundleOptions": "None",
+    "allowPackageTelemetry": true,
+    "dashboards": [
+        {
+            "alias": "ucc",
+            "view": "~/App_Plugins/UmbracoCommerceCheckout/backoffice/views/dashboards/installer.html",
+            "sections": [ "settings" ]
+        }
+    ],
+    "javascript": [
+        "~/App_Plugins/UmbracoCommerceCheckout/backoffice/resources/uccheckout.resource.js",
+        "~/App_Plugins/UmbracoCommerceCheckout/backoffice/views/dashboards/installer.controller.js",
+        "~/App_Plugins/UmbracoCommerceCheckout/backoffice/views/dialogs/installer.controller.js"
+    ]
+}

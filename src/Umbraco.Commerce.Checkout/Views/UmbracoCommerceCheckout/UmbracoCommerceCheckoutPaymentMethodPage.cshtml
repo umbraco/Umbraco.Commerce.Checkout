@@ -1,0 +1,62 @@
+@inherits UmbracoViewPage
+@{
+    Layout = "UmbracoCommerceCheckoutLayout.cshtml";
+
+    var store = Model.GetStore();
+
+    var currentOrder = UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id);
+
+    var paymentCountry = currentOrder.PaymentInfo.CountryId.HasValue
+        ? UmbracoCommerceApi.Instance.GetCountry(currentOrder.PaymentInfo.CountryId.Value)
+        : null;
+    var paymentRegion = currentOrder.PaymentInfo.RegionId.HasValue
+        ? UmbracoCommerceApi.Instance.GetCountry(currentOrder.PaymentInfo.RegionId.Value)
+        : null;
+
+    var paymentMethods = UmbracoCommerceApi.Instance.GetPaymentMethodsAllowedIn(currentOrder.PaymentInfo.CountryId.Value,
+        currentOrder.PaymentInfo.RegionId);
+
+    var currentPaymentMethodId = currentOrder.PaymentInfo.PaymentMethodId.HasValue
+        ? currentOrder.PaymentInfo.PaymentMethodId.Value
+        : paymentRegion != null && paymentRegion.DefaultPaymentMethodId.HasValue && paymentMethods.Any(x => x.Id == paymentRegion.DefaultPaymentMethodId.Value)
+            ? paymentRegion.DefaultPaymentMethodId.Value
+            : paymentCountry != null && paymentCountry.DefaultPaymentMethodId.HasValue && paymentMethods.Any(x => x.Id == paymentCountry.DefaultPaymentMethodId.Value)
+                ? paymentCountry.DefaultPaymentMethodId.Value
+                : paymentMethods.FirstOrDefault()?.Id;
+
+    var zeroValuePaymentMethod = paymentMethods.FirstOrDefault(x => x.Alias == UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
+
+    var checkoutPage = Model.GetCheckoutPage();
+    var nextStepPage = Model.GetNextStepPage();
+}
+
+@using (Html.BeginUmbracoForm("UpdateOrderPaymentMethod", "UmbracoCommerceCheckoutSurface"))
+{
+    <input type="hidden" name="nextStep" value="@(nextStepPage?.Key)" />
+
+    <h3 class="text-xl font-medium mb-4 mt-8">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.PaymentMethod", "Payment Method")</h3>
+
+    if (currentOrder.TransactionAmount.Value > 0 || zeroValuePaymentMethod == null)
+    {
+        <ul class="border border-gray-300 rounded">
+            @foreach (var item in paymentMethods.Where(x => zeroValuePaymentMethod == null || x.Alias != zeroValuePaymentMethod.Alias)
+               .Select((pm, i) => new { PaymentMethod = pm, Index = i }))
+            {
+                <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">
+                    <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-50">
+                        <input name="paymentMethod" type="radio" value="@item.PaymentMethod.Id" class="mr-3" @Html.Raw(currentPaymentMethodId.HasValue && currentPaymentMethodId.Value == item.PaymentMethod.Id ? "checked=\"checked\"" : "") required />
+                        <span class="font-medium">@(item.PaymentMethod.Name)</span>
+                        <span class="flex-1 text-right">@(item.PaymentMethod.CalculatePrice()?.Formatted())</span>
+                    </label>
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <input type="hidden" name="paymentMethod" value="@(zeroValuePaymentMethod.Id)" />
+        <div class="border border-gray-300 rounded py-4 px-4 text-center">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.PaymentMethod.NothingToPay", "It looks like today is your lucky day, there is nothing for you to pay 🎉")</div>
+    }
+    
+    @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
+}

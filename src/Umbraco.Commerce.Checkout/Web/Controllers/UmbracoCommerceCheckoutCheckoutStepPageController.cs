@@ -6,6 +6,13 @@ using Umbraco.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
 {
+    public class UccCheckoutStepPageController : UmbracoCommerceCheckoutCheckoutStepPageController
+    {
+        public UccCheckoutStepPageController(ILogger<UmbracoCommerceCheckoutCheckoutStepPageController> logger, ICompositeViewEngine compositeViewEngine, IUmbracoContextAccessor umbracoContextAccessor)
+            : base(logger, compositeViewEngine, umbracoContextAccessor)
+        { }
+    }
+
     public class UmbracoCommerceCheckoutCheckoutStepPageController : UmbracoCommerceCheckoutBaseController
     {
         public UmbracoCommerceCheckoutCheckoutStepPageController(ILogger<UmbracoCommerceCheckoutCheckoutStepPageController> logger, ICompositeViewEngine compositeViewEngine, IUmbracoContextAccessor umbracoContextAccessor)

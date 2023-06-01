@@ -1,5 +1,17 @@
 name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
 
+trigger:
+  branches:
+    include: 
+      - dev
+      - main
+      - release/*
+      - hotfix/*
+      - support/*
+  tags:
+    include:
+      - release-*
+
 parameters:
   - name: cache_npm
     displayName: Cache NPM packages

@@ -47,7 +47,7 @@
       },
       "Umbraco.Commerce.Cms.Startup": {
         "type": "Direct",
-        "requested": "[12.0.0--rc1, 13.0.0)",
+        "requested": "[12.0.0-rc1, 13.0.0)",
         "resolved": "12.0.0-rc1",
         "contentHash": "HDxFkrgbYl3zKlmfK+b0eXn5McR6h4FMDMcx+Ean5O0DqUWxqOe473mVJnnqpeMFPHvxBB4mfF5377Tb+YbQLg==",
         "dependencies": {

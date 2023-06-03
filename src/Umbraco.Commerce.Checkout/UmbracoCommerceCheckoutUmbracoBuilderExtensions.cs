@@ -25,6 +25,9 @@ namespace Umbraco.Commerce.Checkout
             if (defaultOptions != default)
                 options.Configure(defaultOptions);
 
+            if (!builder.ManifestFilters().Has<UmbracoCommerceCheckoutManifestFilter>())
+                builder.ManifestFilters().Append<UmbracoCommerceCheckoutManifestFilter>();
+
             options.ValidateDataAnnotations();
 
             // Register event handlers

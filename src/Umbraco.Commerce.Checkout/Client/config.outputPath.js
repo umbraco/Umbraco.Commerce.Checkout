@@ -1,1 +1,1 @@
-exports.outputPath = '../obj/Debug/net7.0/clientassets'
+exports.outputPath = '../obj/Debug/net6.0/clientassets'

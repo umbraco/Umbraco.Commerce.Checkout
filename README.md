@@ -15,9 +15,9 @@ With Umbraco Commerce Checkout you can quickly and easily add a ready made, them
 To get started with the Umbraco Commerce demo store you will need:
 
 * Visual Studio 2019 (15.9.7+)
-* .NET 7.0 SDK or newer
-* Umbraco 11.0.0 or newer
-* Umbraco Commerce 12.0.0 or newer
+* .NET 6.0 SDK
+* Umbraco 10.0.0 
+* Umbraco Commerce 10.0.0
 
 
 ## Raising an Issue

@@ -11,6 +11,7 @@ namespace Umbraco.Commerce.Checkout
         {
             var manifest = new PackageManifest()
             {
+                PackageId = "Umbraco.Commerce.Checkout",
                 PackageName = "Umbraco Commerce Checkout",
                 Version = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion?.Split('+')[0],
                 BundleOptions = BundleOptions.None,

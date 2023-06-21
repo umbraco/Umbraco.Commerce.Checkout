@@ -1,4 +1,4 @@
-# Umbraco Commerce Checkout
+# Umbraco Commerce Checkout &middot; [![NuGet](https://img.shields.io/nuget/v/Umbraco.Commerce.Checkout.svg?style=modern&label=nuget)](https://www.nuget.org/packages/Umbraco.Commerce.Checkout/) 
 
 A ready made checkout flow for Umbraco Commerce
 

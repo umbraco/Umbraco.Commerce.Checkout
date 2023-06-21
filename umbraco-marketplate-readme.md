@@ -1,11 +1,12 @@
-## Umbraco Commerce Deploy
+## Umbraco Commerce Checkout
 
-Umbraco Commerce Deploy adds Umbraco Deploy support to your Umbraco Commerce installations.
+Umbraco Commerce Checkout provides a drop-in checkout flow solution for your Umbraco Commerce installations.
 
-With Umbraco Commerce Deploy you can easily transfer your Umbraco Commerce settings and product data between environments either on prem with Umbraco Deploy OnPrem or with Umbraco Cloud.
+With Umbraco Commerce Checkout you can quickly add a modern, responsive and customizable checkout flow to your site saving hours of development costs.
 
 ## Key Features
 
-* Deploy store settings between environments
-* Adapters for Umbraco Commerce property editors
-* Works OnPrem or with Umrbaco Cloud
+* Drop-in checkout flow
+* Modern and responsive design
+* Themable with branding and colours
+* Integrated email templates

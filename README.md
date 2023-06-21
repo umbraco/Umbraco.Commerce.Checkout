@@ -2,7 +2,7 @@
 
 A ready made checkout flow for Umbraco Commerce
 
-![Screenshot](assets/002.png)
+![Screenshot](assets/ss_checkout.png)
 
 ## About
 

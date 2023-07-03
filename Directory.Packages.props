@@ -11,7 +11,7 @@
     <GlobalPackageReference Include="Umbraco.JsonSchema.Extensions" Version="0.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Umbraco.Commerce.Cms.Startup" Version="[10.0.0--rc1.preview.7, 13)" />
+    <PackageVersion Include="Umbraco.Commerce.Cms.Startup" Version="[10.0.0, 13)" />
     <PackageVersion Include="Umbraco.Cms.Web.Website" Version="[10.0.0, 12)" />
   </ItemGroup>
 </Project>

@@ -4,7 +4,6 @@ trigger:
   branches:
     include: 
       - dev
-      - main
       - release/*
       - hotfix/*
       - support/*

@@ -7,7 +7,7 @@
         var vm = this;
 
         var dialogOptions = {
-            view: '/app_plugins/umbracocommercecheckout/backoffice/views/dialogs/installer.html',
+            view: '/App_Plugins/UmbracoCommerceCheckout/backoffice/views/dialogs/installer.html',
             size: 'small',
             config: { },
             submit: function (model) {

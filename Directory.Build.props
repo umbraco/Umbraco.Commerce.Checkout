@@ -7,7 +7,7 @@
     <Product>Umbraco Commerce Checkout</Product>
     <PackageProjectUrl>https://github.com/umbraco/Umbraco.Commerce.Checkout</PackageProjectUrl>
     <PackageIcon>logo-128.png</PackageIcon>
-    <PackageTags>umbraco commerce checkout</PackageTags>
+    <PackageTags>umbraco commerce checkout umbraco-marketplace</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <NeutralLanguage>en-US</NeutralLanguage>

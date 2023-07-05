@@ -6,6 +6,7 @@
     "Url": "https://umbraco.com",
     "ImageUrl": "https://avatars.githubusercontent.com/u/1419552?s=200&v=4"
   },
+  "Description": "The drop in checkout solution for Umbraco Commerce, providing a modern, responsive, ready to go checkout flow to get you set up and selling faster.",
   "Category": "Commerce",
   "LicenseTypes": [
     "Free"
@@ -13,7 +14,6 @@
   "DocumentationUrl": "https://docs.umbraco.com/umbraco-commerce-packages/deploy/checkout",
   "IssueTrackerUrl": "https://github.com/umbraco/Umbraco.Commerce.Checkout/issues",
   "PackageType": "Package",
-  "IsSubPackageOf": "Umbraco.Commerce",
   "PackagesByAuthor": [
     "Umbraco.Forms",
     "Umbraco.Workflow",
@@ -35,11 +35,11 @@
       "Caption": "Umbraco Commerce Checkout dashboard"
     },
     {
-      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Deploy/main/assets/ss_content.png",
+      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Checkout/main/assets/ss_content.png",
       "Caption": "Umbraco Commerce Checkout content nodes"
     },
     {
-      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Deploy/main/assets/ss_checkout.png",
+      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Checkout/main/assets/ss_checkout.png",
       "Caption": "Umbraco Commerce Checkout checkout flow"
     }
   ],

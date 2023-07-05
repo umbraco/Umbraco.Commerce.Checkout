@@ -35,11 +35,11 @@
       "Caption": "Umbraco Commerce Checkout dashboard"
     },
     {
-      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Deploy/main/assets/ss_content.png",
+      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Checkout/main/assets/ss_content.png",
       "Caption": "Umbraco Commerce Checkout content nodes"
     },
     {
-      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Deploy/main/assets/ss_checkout.png",
+      "ImageUrl": "https://raw.githubusercontent.com/umbraco/Umbraco.Commerce.Checkout/main/assets/ss_checkout.png",
       "Caption": "Umbraco Commerce Checkout checkout flow"
     }
   ],

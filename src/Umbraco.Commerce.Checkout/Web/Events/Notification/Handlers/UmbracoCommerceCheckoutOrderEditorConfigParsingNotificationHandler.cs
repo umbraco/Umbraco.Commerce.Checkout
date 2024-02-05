@@ -1,8 +1,8 @@
 using System.Linq;
 using Umbraco.Commerce.Common.Events;
-using Umbraco.Commerce.Cms.Web.Events.Notification;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
+using Umbraco.Commerce.Core.Events.Notification;
 
 namespace Umbraco.Commerce.Checkout.Web.Events.Notification.Handlers
 {
@@ -32,7 +32,7 @@ namespace Umbraco.Commerce.Checkout.Web.Events.Notification.Handlers
                 var uccCollectShippingInfo = checkoutPage.Value<bool>("uccCollectShippingInfo");
 
                 // Update parsed config
-                evt.Config["shipping"]["enabled"] = uccCollectShippingInfo;
+                evt.Config.Shipping.Enabled = uccCollectShippingInfo;
             }
         }
     }

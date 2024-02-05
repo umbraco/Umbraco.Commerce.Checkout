@@ -15,9 +15,9 @@ using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Cms.Web.Common.Filters;
 using Umbraco.Extensions;
+using Umbraco.Commerce.Common.Models;
 
 using UmbracoCommerceConstants = Umbraco.Commerce.Core.Constants;
-using Umbraco.Commerce.Common.Models;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
 {

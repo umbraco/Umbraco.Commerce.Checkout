@@ -1,4 +1,4 @@
-﻿(function () {
+(function () {
 
     // Initialization
     function init() {
@@ -32,6 +32,13 @@
             var h = () => { document.getElementById("shipping-info").classList.toggle("hidden", el.checked); toggleShippingRequiredInputValidation(); }
             el.addEventListener("change", h);
             h();
+        });
+
+        // Update shippingOptionId based on selected shipping method
+        document.querySelectorAll("input[name=shippingMethod]").forEach(el => {
+          var h = () => { document.querySelector("input[name=shippingOptionId]").value = document.querySelector("input[name=shippingMethod]:checked").dataset.optionId; }
+          el.addEventListener("change", h);
+          if (el.checked) h();
         });
 
         // Enable / disable continue button when accepting terms

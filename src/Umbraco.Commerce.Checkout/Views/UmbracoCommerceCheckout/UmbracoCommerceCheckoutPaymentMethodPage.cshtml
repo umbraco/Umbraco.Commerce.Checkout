@@ -34,7 +34,7 @@
 {
     <input type="hidden" name="nextStep" value="@(nextStepPage?.Key)" />
 
-    <h3 class="text-xl font-medium mb-4 mt-8">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.PaymentMethod", "Payment Method")</h3>
+    <h3 class="text-xl font-medium mb-4 mt-8">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.PaymentMethod", "Payment Method")</h3>
 
     if (currentOrder.TransactionAmount.Value > 0 || zeroValuePaymentMethod == null)
     {
@@ -59,7 +59,7 @@
     else
     {
         <input type="hidden" name="paymentMethod" value="@(zeroValuePaymentMethod.Id)" />
-        <div class="border border-gray-300 rounded py-4 px-4 text-center">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.PaymentMethod.NothingToPay", "It looks like today is your lucky day, there is nothing for you to pay 🎉")</div>
+        <div class="border border-gray-300 rounded py-4 px-4 text-center">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.PaymentMethod.NothingToPay", "It looks like today is your lucky day, there is nothing for you to pay 🎉")</div>
     }
     
     @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")

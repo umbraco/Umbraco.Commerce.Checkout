@@ -1,10 +1,8 @@
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Common.Pipelines.Tasks;
-using System.Reflection;
-using System.Linq;
-using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.Scoping;
-using Umbraco.Cms.Core.Services;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
@@ -33,7 +31,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                 // Check to see if the checkout node already exists
                 var filter = scope.SqlContext.Query<IContent>().Where(x => x.ContentTypeId == uccCheckoutPageContenType.Id);
                 var childNodes = _contentService.GetPagedChildren(args.Model.SiteRootNodeId, 1, 1, out long totalRecords, filter);
-                
+
                 if (totalRecords == 0)
                 {
                     // Create the checkout page

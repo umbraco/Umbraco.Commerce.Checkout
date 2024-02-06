@@ -54,8 +54,8 @@
 
             <a id="order-summary-toggle" href="#" class="flex items-center justify-between border-t border-b border-gray-300 bg-gray-50 lg:hidden"> 
                 <span class="py-4 pl-8 pr-2 text-lg">
-                    <span id="order-summary-toggle__text-closed" class="flex items-center"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.ShowSummary", "Show Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-down" /></svg></span>
-                    <span id="order-summary-toggle__text-open" class="flex items-center hidden"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.HideSummary", "Hide Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-up" /></svg></span>
+                    <span id="order-summary-toggle__text-closed" class="flex items-center"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.ShowSummary", "Show Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-down" /></svg></span>
+                    <span id="order-summary-toggle__text-open" class="flex items-center hidden"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.HideSummary", "Hide Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-up" /></svg></span>
                 </span>
                 <span class="py-4 pr-8 pl-2 text-lg font-medium">
                     @currentOrder.TransactionAmount.Value.Formatted()
@@ -84,7 +84,7 @@
                 @RenderSection("aside", false)
 
                 <div class="flex w-full justify-between items-center">
-                    <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Subtotal", "Subtotal")</div>
+                    <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Subtotal", "Subtotal")</div>
                     <div class="font-medium">@(currentOrder.SubtotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
                 </div>
 
@@ -98,7 +98,7 @@
                     {
                         <div class="flex w-full justify-between items-center mt-2">
                             <div class="">
-                                @string.Format(Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.ShippingVia", "Shipping via {0}"), currentShippingMethod.Name)
+                                @string.Format(Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.ShippingVia", "Shipping via {0}"), currentShippingMethod.Name)
                             </div>
                             <div class="font-medium">@(currentOrder.ShippingInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
                         </div>
@@ -109,7 +109,7 @@
                 {
                     <div class="flex w-full justify-between items-center mt-2">
                         <div class="">
-                            @string.Format(Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.PaymentVia", "Payment via {0}"), currentPaymentMethod.Name)
+                            @string.Format(Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.PaymentVia", "Payment via {0}"), currentPaymentMethod.Name)
                         </div>
                         <div class="font-medium">@(currentOrder.PaymentInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
                     </div>
@@ -120,21 +120,21 @@
                     if (totalDiscounts != 0)
                     {
                         <div class="flex w-full justify-between items-center mt-2 ">
-                            <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Discounts", "Discounts")</div>
+                            <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Discounts", "Discounts")</div>
                             <div class="font-medium">@totalDiscounts.Formatted().WithoutTax</div>
                         </div>
                     }
                 }
 
                 <div class="flex w-full justify-between items-center mt-2">
-                    <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Tax", "Tax")</div>
+                    <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Tax", "Tax")</div>
                     <div class="font-medium">@(currentOrder.TotalPrice.Value.Formatted().Tax)</div>
                 </div>
 
                 @foreach (var giftCardAdjustment in currentOrder.TransactionAmount.Adjustments.OfType<GiftCardAdjustment>())
                 {
                     <div class="flex w-full justify-between items-center mt-2">
-                        <div class="">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.GiftCard", "Gift Card") (@(giftCardAdjustment.GiftCardCode))</div>
+                        <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.GiftCard", "Gift Card") (@(giftCardAdjustment.GiftCardCode))</div>
                         <div class="font-medium">-@(giftCardAdjustment.Amount.Formatted())</div>
                     </div>
                 }
@@ -142,7 +142,7 @@
                 <hr class="border-t border-gray-300 my-4" />
 
                 <div class="flex w-full justify-between items-center">
-                    <div class="font-medium text-base">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.OrderSummary.Total", "Total")</div>
+                    <div class="font-medium text-base">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Total", "Total")</div>
                     <div class="font-medium text-2xl">@currentOrder.TransactionAmount.Value.Formatted()</div>
                 </div>
 

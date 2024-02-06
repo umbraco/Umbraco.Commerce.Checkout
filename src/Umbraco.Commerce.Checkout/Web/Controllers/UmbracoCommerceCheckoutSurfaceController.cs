@@ -15,6 +15,7 @@ using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Web.Website.Controllers;
 using Umbraco.Cms.Web.Common.Filters;
 using Umbraco.Extensions;
+using Umbraco.Commerce.Common.Models;
 
 using UmbracoCommerceConstants = Umbraco.Commerce.Core.Constants;
 
@@ -183,8 +184,26 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
                     var checkoutPage = CurrentPage.GetCheckoutPage();
                     var store = CurrentPage.GetStore();
                     var order = _commerceApi.GetCurrentOrder(store.Id)
-                        .AsWritable(uow)
-                        .SetShippingMethod(model.ShippingMethod);
+                        .AsWritable(uow);
+
+                    if (!model.ShippingOptionId.IsNullOrWhiteSpace())
+                    {
+                        var shippingMethod = _commerceApi.GetShippingMethod(model.ShippingMethod);
+                        var shippingRateAttempt = shippingMethod.TryCalculateRate(model.ShippingOptionId, order);
+
+                        if (shippingRateAttempt.Success)
+                        {
+                            order.SetShippingMethod(model.ShippingMethod, shippingRateAttempt.Result.Option);
+                        }
+                        else
+                        {
+                            throw new ValidationException(new[] { new ValidationError("Unable to locate the selected shipping option") });
+                        }
+                    }
+                    else
+                    {
+                        order.SetShippingMethod(model.ShippingMethod);
+                    }
 
                     _commerceApi.SaveOrder(order);
 

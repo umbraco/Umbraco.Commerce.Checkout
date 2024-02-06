@@ -32,6 +32,10 @@
                 ? shippingCountry.DefaultShippingMethodId.Value
                 : shippingMethods.FirstOrDefault()?.Id;
 
+    var currentShippinOptionId = currentShippingMethodId.HasValue && currentOrder.ShippingInfo.ShippingMethodId.HasValue && currentShippingMethodId == currentOrder.ShippingInfo.ShippingMethodId
+        ? currentOrder.ShippingInfo.ShippingOption?.Id
+        : null;
+
     var checkoutPage = Model.GetCheckoutPage();
     var nextStepPage = Model.GetNextStepPage();
 }
@@ -40,19 +44,59 @@
 {
     <input type="hidden" name="nextStep" value="@(nextStepPage?.Key)" />
 
-    <h3 class="text-xl font-medium mb-4">@Umbraco.GetDictionaryValue("UmbracoCommerceCheckout.ShippingMethod", "Shipping Method")</h3>
+    <h3 class="text-xl font-medium mb-4">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.ShippingMethod", "Shipping Method")</h3>
     <ul class="border border-gray-300 rounded">
         @foreach (var item in shippingMethods.Select((sm, i) => new { ShippingMethod = sm, Index = i }))
         {
-            <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">
-                <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-50">
-                    <input name="shippingMethod" type="radio" value="@item.ShippingMethod.Id" class="mr-3" @Html.Raw(currentShippingMethodId.HasValue && currentShippingMethodId.Value == item.ShippingMethod.Id ? "checked=\"checked\"" : "") required />
-                    <span class="font-medium">@(item.ShippingMethod.Name)</span>
-                    <span class="flex-1 text-right">@(item.ShippingMethod.CalculatePrice()?.Formatted())</span>
-                </label>
-            </li>
+            var rates = item.ShippingMethod.TryCalculateRates(currentOrder);
+            if (rates.Success)
+            {
+                foreach (var rate in rates.Result)
+                {
+                    var isSelected = false;
+
+                    if (currentShippingMethodId.HasValue && currentShippingMethodId.Value == item.ShippingMethod.Id)
+                    {
+                        if (rate.Option != null)
+                        {
+                            if (currentShippinOptionId == null)
+                            {
+                                currentShippinOptionId = rate.Option?.Id;
+                                isSelected = true;
+                            }
+                            else if (currentShippinOptionId == rate.Option?.Id)
+                            {
+                                isSelected = true;
+                            }
+                        }
+                        else
+                        {
+                            isSelected = true;
+                        }
+                    }
+
+                    <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">
+                        <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-50">
+                            <input name="shippingMethod" type="radio" value="@item.ShippingMethod.Id"
+                                data-option-id="@rate.Option?.Id"
+                                class="mr-3" required 
+                                @Html.Raw(isSelected ? " checked=\"checked\"" : "") />
+                            <span class="font-medium">
+                                @(item.ShippingMethod.Name)
+                                @if (rate.Option != null)
+                                {
+                                    <text> - @rate.Option.Name</text>
+                                }
+                            </span>
+                            <span class="flex-1 text-right">@(rate.Value?.Formatted())</span>
+                        </label>
+                    </li>
+                }
+            }
         }
     </ul>
+
+    <input type="hidden" name="shippingOptionId" value="@(currentShippinOptionId)" />
     
     @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

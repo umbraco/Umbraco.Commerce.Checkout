@@ -4,7 +4,6 @@ using Umbraco.Commerce.Checkout.Pipeline.Tasks;
 using Umbraco.Commerce.Checkout.Web.Events.Notification.Handlers;
 using Umbraco.Commerce.Core.Events.Notification;
 using Umbraco.Commerce.Extensions;
-using Umbraco.Commerce.Cms.Web.Events.Notification;
 
 using IBuilder = Umbraco.Cms.Core.DependencyInjection.IUmbracoBuilder;
 

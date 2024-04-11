@@ -1,12 +1,16 @@
 module.exports = {
-  mode: 'jit', 
+  mode: 'jit',
   content: [
     '../Views/UmbracoCommerceCheckout/**/*.cshtml',
     './src/scripts/**/*.js'
   ],
   safelist: [
+    // Make configurable theme colors safe
     {
-      // Make configurable theme colors safe
+      pattern: /(bg|text)-black/,
+      variants: ['hover'],
+    },
+    {
       pattern: /(bg|text)-(red|orange|yellow|green|teal|blue|indigo|purple|pink)-500/,
       variants: ['hover'],
     },

@@ -10,15 +10,14 @@ Umbraco Commerce Checkout is an add-on package for Umbraco Commerce, providing a
 
 With Umbraco Commerce Checkout you can quickly and easily add a ready made, themeable and responsive checkout flow onto your site, saving hours of custom development. 
 
-## System Requirements
+This package uses the same versioning strategy with Umbraco Commerce. 
 
-To get started with the Umbraco Commerce demo store you will need:
-
-* Visual Studio 2019 (15.9.7+)
-* .NET 7.0 SDK or newer
+## Working locally
+To fork and build your own Commerce Checkout package, you will need:
+* .NET 8.0 SDK or newer
 * Umbraco 11.0.0 or newer
-* Umbraco Commerce 12.0.0 or newer
-
+* Umbraco Commerce 14.0.0 or newer
+* NodeJS 20+ for frontend development. Open `/src/Umbraco.Commerce.Checkout/Client` folder and run `npm i; npm run build`
 
 ## Raising an Issue
 

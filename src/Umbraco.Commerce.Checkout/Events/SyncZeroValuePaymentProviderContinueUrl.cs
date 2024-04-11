@@ -10,6 +10,7 @@ using Umbraco.Cms.Core.Sync;
 using Umbraco.Cms.Core.Services.Changes;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
+using Umbraco.Commerce.Checkout.Web;
 
 namespace Umbraco.Commerce.Checkout.Events
 {
@@ -99,19 +100,25 @@ namespace Umbraco.Commerce.Checkout.Events
         private void DoSyncZeroValuePaymentProviderContinueUrl(IPublishedContent confirmationNode)
         {
             if (confirmationNode == null)
+            {
                 return;
+            }
 
-            var store = confirmationNode.Value<StoreReadOnly>(Cms.Constants.Properties.StorePropertyAlias, fallback: Fallback.ToAncestors);
+            StoreReadOnly? store = confirmationNode.GetStore();
             if (store == null)
+            {
                 return;
+            }
 
-            var paymentMethod = _commerceApi.GetPaymentMethod(store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
+            PaymentMethodReadOnly paymentMethod = _commerceApi.GetPaymentMethod(store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
             if (paymentMethod == null)
+            {
                 return;
+            }
 
             _commerceApi.Uow.Execute(uow =>
             {
-                var writable = paymentMethod.AsWritable(uow)
+                PaymentMethod writable = paymentMethod.AsWritable(uow)
                     .SetSetting("ContinueUrl", confirmationNode.Url());
 
                 _commerceApi.SavePaymentMethod(writable);

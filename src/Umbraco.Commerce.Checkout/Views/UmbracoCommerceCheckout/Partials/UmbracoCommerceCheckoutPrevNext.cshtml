@@ -1,10 +1,10 @@
-﻿@inherits UmbracoViewPage
-@{ 
+@inherits UmbracoViewPage
+@{
     var backPage = Model.GetCheckoutBackPage();
     var prevStep = Model.GetPreviousStepPage();
     var nextStep = Model.GetNextStepPage();
 
-    var themeColor = Model.GetThemeColor();
+    string themeColor = Model.GetThemeColor();
 }
 <div class="flex flex-col-reverse items-center justify-between mt-8 md:flex-row">
     @if (prevStep != null)
@@ -22,7 +22,12 @@
     @if (nextStep != null)
     {
         <div class="mb-4 w-full md:mb-0 md:w-auto">
-            <button id="continue" class="bg-@(themeColor) text-white px-4 py-4 w-full rounded hover:bg-gray-900 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-gray-100 disabled:hover:text-gray-300" type="submit">@string.Format(Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Navigation.ContinueTo", "Continue to {0}"), nextStep.Name)</button>
+            <button id="continue"
+                    class="bg-@(themeColor) text-white px-4 py-4 w-full rounded hover:bg-gray-900 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-gray-100 disabled:hover:text-gray-300"
+                    type="submit"
+                    disabled>
+                @string.Format(Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Navigation.ContinueTo", "Continue to {0}"), nextStep.Name)
+            </button>
         </div>
     }
 </div>

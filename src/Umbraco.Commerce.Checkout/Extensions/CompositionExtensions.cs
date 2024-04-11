@@ -1,7 +1,6 @@
 using Umbraco.Commerce.Checkout.Events;
 using Umbraco.Commerce.Checkout.Pipeline;
 using Umbraco.Commerce.Checkout.Pipeline.Tasks;
-using Umbraco.Commerce.Checkout.Web.Events.Notification.Handlers;
 using Umbraco.Commerce.Core.Events.Notification;
 using Umbraco.Commerce.Extensions;
 
@@ -36,8 +35,6 @@ namespace Umbraco.Commerce.Checkout.Extensions
 
             // Toggle order editor shipping address enabled flag based on
             // whether there umbraco commerce checkout is configured to collect a shipping address
-            builder.WithNotificationEvent<OrderEditorConfigParsingNotification>()
-                .RegisterHandler<UmbracoCommerceCheckoutOrderEditorConfigParsingNotificationHandler>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
             return builder;

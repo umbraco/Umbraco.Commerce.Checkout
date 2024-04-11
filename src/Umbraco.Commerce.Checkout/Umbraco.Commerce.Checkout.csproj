@@ -22,15 +22,4 @@
     <Content Include="**/*.cshtml" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <!-- Build client assets using NPM -->
-  <Import Project="build\Microsoft.AspNetCore.ClientAssets.targets" />
-  
-  <Target Name="ClientAssetsBuildOutputPath" BeforeTargets="ClientAssetsBuild">
-    <WriteLinesToFile File="Client\config.outputPath.js" Lines="exports.outputPath = '../$(IntermediateOutputPath.Replace('\', '/'))clientassets';" Overwrite="true" WriteOnlyWhenDifferent="true" />
-  </Target>
-  
-  <ItemGroup>
-    <ClientAssetsInputs Remove="Client\tailwind.config.js" />
-  </ItemGroup>
-  
 </Project>

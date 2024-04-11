@@ -1,7 +1,7 @@
-const plugin = require('tailwindcss/plugin')
+const plugin = require('tailwindcss/plugin');
 const selectorParser = require('postcss-selector-parser');
 
-module.exports = plugin(function({ addVariant, e }) {
+module.exports = plugin(function ({ addVariant, e }) {
 
     addVariant('scrolled', ({ modifySelectors, separator, container }) => {
         modifySelectors(({ selector }) => {
@@ -9,4 +9,4 @@ module.exports = plugin(function({ addVariant, e }) {
         });
     });
 
-})
+});

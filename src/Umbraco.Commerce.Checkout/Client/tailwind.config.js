@@ -9,6 +9,10 @@ module.exports = {
       // Make configurable theme colors safe
       pattern: /(bg|text)-(red|orange|yellow|green|teal|blue|indigo|purple|pink)-500/,
       variants: ['hover'],
+    },
+    {
+      pattern: /(break-)|(flex)|(w-)/,
+      variants: ['sm', 'md', 'lg'],
     }
   ],
   variants: {

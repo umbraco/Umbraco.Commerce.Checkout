@@ -14,16 +14,16 @@ namespace Umbraco.Commerce.Checkout
 #pragma warning disable IDE1006 // Naming Styles
         public static IReadOnlyDictionary<string, string> ColorMap = new Dictionary<string, string>
         {
-            { "#000000", "black" },
-            { "#ef4444", "red-500" },
-            { "#f97316", "orange-500" },
-            { "#eab308", "yellow-500" },
-            { "#22c55e", "green-500" },
-            { "#14b8a6", "teal-500" },
-            { "#3b82f6", "blue-500" },
-            { "#6366f1", "indigo-500" },
-            { "#a855f7", "purple-500" },
-            { "#ec4899", "pink-500" }
+            { "000000", "black" },
+            { "ef4444", "red-500" },
+            { "f97316", "orange-500" },
+            { "eab308", "yellow-500" },
+            { "22c55e", "green-500" },
+            { "14b8a6", "teal-500" },
+            { "3b82f6", "blue-500" },
+            { "6366f1", "indigo-500" },
+            { "a855f7", "purple-500" },
+            { "ec4899", "pink-500" }
         };
 #pragma warning restore IDE1006 // Naming Styles
 

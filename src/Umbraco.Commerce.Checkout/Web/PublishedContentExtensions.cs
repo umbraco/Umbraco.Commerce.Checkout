@@ -19,12 +19,12 @@ namespace Umbraco.Commerce.Checkout.Web
 
         public static IPublishedContent GetCheckoutBackPage(this IPublishedContent content)
         {
-            return GetCheckoutPage(content).Value<IPublishedContent>("uccBackPage");
+            return GetCheckoutPage(content).Value<IPublishedContent>("uccBackPage")!;
         }
 
         public static string GetThemeColor(this IPublishedContent content)
         {
-            string themeColor = GetCheckoutPage(content).Value("uccThemeColor", defaultValue: "000000")!;
+            string themeColor = GetCheckoutPage(content).Value("uccThemeColor", defaultValue: "#000000")!.TrimStart('#');
 
             if (UmbracoCommerceCheckoutConstants.ColorMap.TryGetValue(themeColor, out string? value))
             {

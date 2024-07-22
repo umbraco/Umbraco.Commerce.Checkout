@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Umbraco.Commerce.Checkout.Pipeline;
 using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Core.Models;
@@ -7,7 +8,7 @@ namespace Umbraco.Commerce.Checkout.Services
 {
     public class InstallService
     {
-        public void Install(int siteRootNodeId, StoreReadOnly store)
+        public async Task InstallAsync(int siteRootNodeId, StoreReadOnly store)
         {
             PipelineResult<InstallPipelineContext> result = PipelineRunner.Invoke<InstallPipeline, InstallPipelineContext>(new InstallPipelineContext
             {

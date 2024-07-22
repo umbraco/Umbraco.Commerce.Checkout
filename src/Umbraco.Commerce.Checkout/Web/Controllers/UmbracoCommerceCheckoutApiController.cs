@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Api.Management.Routing;
@@ -29,7 +30,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
         }
 
         [HttpGet("install")]
-        public object InstallUmbracoCommerceCheckout(Guid? siteRootNodeId)
+        public async Task<object> InstallUmbracoCommerceCheckout(Guid? siteRootNodeId)
         {
             ArgumentNullException.ThrowIfNull(siteRootNodeId);
 
@@ -53,7 +54,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             }
 
             // Perform the install
-            new InstallService().Install(siteRootNode.Id, store);
+            await new InstallService().InstallAsync(siteRootNode.Id, store).ConfigureAwait(false);
 
             // Return success
             return new { success = true };

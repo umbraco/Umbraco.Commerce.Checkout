@@ -9,6 +9,5 @@ const manifests: Array<ManifestTypes> = [
 ];
 
 export const onInit: UmbEntryPointOnInit = (_host, extensionRegistry) => {
-    console.log('%c Checkout v14 plugin loaded ＼（〇_ｏ）／', 'font-size: 20pt;');
     extensionRegistry.registerMany(manifests);
 };

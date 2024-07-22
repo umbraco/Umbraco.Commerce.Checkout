@@ -479,5 +479,5 @@ $RECYCLE.BIN/
 ##
 ## Umbraco Commerce specific
 ##
-/src/Umbraco.Commerce.Checkout/wwwroot/dist
+/src/Umbraco.Commerce.Checkout/wwwroot/
 .vscode

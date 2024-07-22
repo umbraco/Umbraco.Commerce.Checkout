@@ -1,5 +1,5 @@
 import type { ManifestDashboard, ManifestModal } from '@umbraco-cms/backoffice/extension-registry';
-import { UCC_INSTALLER_MODAL_ALIAS } from './installer-modal.token';
+import { UCC_INSTALLER_MODAL_ALIAS } from '../modals/installer-modal.token';
 
 const dashboardManifests: Array<ManifestDashboard | ManifestModal> = [
     {
@@ -24,7 +24,7 @@ const dashboardManifests: Array<ManifestDashboard | ManifestModal> = [
         meta: {},
         name: 'Umbraco Commerce Checkout Installer Modal',
         elementName: 'ucc-installer-config-modal',
-        element: () => import('./installer-modal.element'),
+        element: () => import('../modals/installer-modal.element'),
     },
 ];
 export const manifests = [...dashboardManifests];

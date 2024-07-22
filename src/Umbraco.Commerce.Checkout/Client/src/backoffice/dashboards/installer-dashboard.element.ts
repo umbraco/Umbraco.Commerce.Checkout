@@ -1,7 +1,7 @@
 import { LitElement, css, html, customElement } from '@umbraco-cms/backoffice/external/lit';
 import { UmbElementMixin } from '@umbraco-cms/backoffice/element-api';
 import { UMB_MODAL_MANAGER_CONTEXT } from '@umbraco-cms/backoffice/modal';
-import { UCC_INSTALLER_MODAL_TOKEN, UccInstallerModalSubmitValue } from './installer-modal.token';
+import { UCC_INSTALLER_MODAL_TOKEN } from '../modals/installer-modal.token';
 
 const ELEMENT_NAME = 'uc-checkout-installer-dashboard';
 @customElement(ELEMENT_NAME)
@@ -18,17 +18,9 @@ export class UcCheckoutInstallerDashboard extends UmbElementMixin(LitElement) {
   }
 
   #onOpenRootPickerClick() {
-    console.log('clicked');
-    const modalContext = this.#modalManagerContext?.open(this, UCC_INSTALLER_MODAL_TOKEN, {
+    this.#modalManagerContext?.open(this, UCC_INSTALLER_MODAL_TOKEN, {
       data: {},
     });
-
-    modalContext?.onSubmit()
-      .then((res: UccInstallerModalSubmitValue) => {
-        console.log(res);
-      }, () => {
-        console.log('User cancelled.');
-      });
   }
 
   render() {

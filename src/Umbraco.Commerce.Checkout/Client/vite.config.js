@@ -1,5 +1,6 @@
 
 import { defineConfig } from 'vite';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
@@ -11,7 +12,7 @@ export default defineConfig({
             },
             formats: ['es'],
         },
-        outDir: '../wwwroot/dist/',
+        outDir: '../wwwroot/',
         emptyOutDir: true,
         sourcemap: true,
         rollupOptions: {
@@ -29,5 +30,15 @@ export default defineConfig({
         },
         cssCodeSplit: true,
     },
-    plugins: [tsconfigPaths()],
+    plugins: [
+        tsconfigPaths(),
+        viteStaticCopy({
+            targets: [
+                {
+                    src: 'src/umbraco-package.json',
+                    dest: '../wwwroot/',
+                },
+            ],
+        }),
+    ],
 });

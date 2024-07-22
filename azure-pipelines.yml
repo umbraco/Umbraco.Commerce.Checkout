@@ -70,12 +70,16 @@ stages:
               path: $(npm_config_cache)
           
           - task: CmdLine@2
+            displayName: 'Install NPM packages'
+            inputs:
+              script: 'npm ci --no-fund --no-audit --prefer-offline'
+              workingDirectory: '$(Build.SourcesDirectory)/src/Umbraco.Commerce.Checkout/Client'
+  
+          - task: CmdLine@2
             displayName: 'Build frontend'
             inputs:
               workingDirectory: $(Build.SourcesDirectory)/src/Umbraco.Commerce.Checkout/Client
-              script: |
-                npm i
-                npm run build
+              script: 'npm run build'
 
           # Cache and restore NuGet packages
           - task: Cache@2

@@ -6,7 +6,7 @@ const dashboardManifests: Array<ManifestDashboard | ManifestModal> = [
         type: 'dashboard',
         alias: 'Umbraco.Commerce.Checkout.InstallerDashboard',
         weight: -100,
-        name: 'Umbraco Commerce Checkout v14',
+        name: 'Umbraco Commerce Checkout',
         meta: {
         },
         element: () => import('./installer-dashboard.element'),

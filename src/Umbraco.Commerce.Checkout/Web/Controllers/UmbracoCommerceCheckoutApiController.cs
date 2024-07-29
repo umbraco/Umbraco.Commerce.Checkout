@@ -54,7 +54,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             }
 
             // Perform the install
-            await new InstallService().InstallAsync(siteRootNode.Id, store).ConfigureAwait(false);
+            await new InstallService().InstallAsync(siteRootNode.Id, store);
 
             // Return success
             return new { success = true };

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -11,7 +13,7 @@ using Umbraco.Commerce.Common.Pipelines.Tasks;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutDataTypesTask : PipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutDataTypesTask : AsyncPipelineTaskBase<InstallPipelineContext>
     {
         private readonly IDataTypeService _dataTypeService;
         private readonly PropertyEditorCollection _propertyEditors;
@@ -28,12 +30,12 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             _configurationEditorJsonSerializer = configurationEditorJsonSerializer;
         }
 
-        public override PipelineResult<InstallPipelineContext> Execute(PipelineArgs<InstallPipelineContext> args)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
         {
             // Theme Color Picker
             if (_propertyEditors.TryGet(Constants.PropertyEditors.Aliases.ColorPicker, out IDataEditor? colorPickerDataEditor))
             {
-                IDataType? currentColorPicker = _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.ThemeColorPickerGuid).GetAwaiter().GetResult();
+                IDataType? currentColorPicker = await _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.ThemeColorPickerGuid);
                 if (currentColorPicker == null)
                 {
                     DataType dataType = CreateDataType(colorPickerDataEditor, x =>
@@ -57,7 +59,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                 _configurationEditorJsonSerializer);
                     });
 
-                    _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey).GetAwaiter().GetResult();
+                    await _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
                 }
                 else
                 {
@@ -76,7 +78,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                 },
                                 _configurationEditorJsonSerializer);
 
-                    _dataTypeService.UpdateAsync(currentColorPicker, Constants.Security.SuperUserKey).GetAwaiter().GetResult();
+                    await _dataTypeService.UpdateAsync(currentColorPicker, Constants.Security.SuperUserKey);
                 }
             }
 
@@ -90,7 +92,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                 "Confirmation",
             ];
 
-            IDataType? currentStepPicker = _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.StepPickerGuid).GetAwaiter().GetResult();
+            IDataType? currentStepPicker = await _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.StepPickerGuid);
             if (_propertyEditors.TryGet(Constants.PropertyEditors.Aliases.DropDownListFlexible, out IDataEditor? ddlDataEditor))
             {
                 if (currentStepPicker == null)
@@ -112,7 +114,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                 _configurationEditorJsonSerializer);
                     });
 
-                    _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey).GetAwaiter().GetResult();
+                    await _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
                 }
                 else
                 {
@@ -127,7 +129,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                             },
                             _configurationEditorJsonSerializer);
 
-                    _dataTypeService.UpdateAsync(currentStepPicker, Constants.Security.SuperUserKey).GetAwaiter().GetResult();
+                    await _dataTypeService.UpdateAsync(currentStepPicker, Constants.Security.SuperUserKey);
                 }
             }
 

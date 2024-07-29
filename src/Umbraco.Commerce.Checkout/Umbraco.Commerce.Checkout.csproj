@@ -6,6 +6,7 @@
     <StaticWebAssetBasePath>App_Plugins/UmbracoCommerceCheckout</StaticWebAssetBasePath>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <NoWarn>CA2007;CA1848</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

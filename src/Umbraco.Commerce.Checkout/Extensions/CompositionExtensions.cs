@@ -1,6 +1,7 @@
 using Umbraco.Commerce.Checkout.Events;
 using Umbraco.Commerce.Checkout.Pipeline;
 using Umbraco.Commerce.Checkout.Pipeline.Tasks;
+using Umbraco.Commerce.Core;
 using Umbraco.Commerce.Core.Events.Notification;
 using Umbraco.Commerce.Extensions;
 
@@ -12,44 +13,40 @@ namespace Umbraco.Commerce.Checkout.Extensions
     {
         public static IBuilder AddUmbracoCommerceEventHandlers(this IBuilder builder)
         {
+            IUmbracoCommerceBuilder commerceBuilder = builder.WithUmbracoCommerceBuilder();
+
             // Reset shipping / payment methods when certain elements of
             // an order change
-#pragma warning disable CS0618 // Type or member is obsolete
-            builder.WithNotificationEvent<OrderProductAddingNotification>()
+            commerceBuilder.WithNotificationEvent<OrderProductAddingNotification>()
                 .RegisterHandler<OrderProductAddingHandler>();
 
-            builder.WithNotificationEvent<OrderLineChangingNotification>()
+            commerceBuilder.WithNotificationEvent<OrderLineChangingNotification>()
                 .RegisterHandler<OrderLineChangingHandler>();
 
-            builder.WithNotificationEvent<OrderLineRemovingNotification>()
+            commerceBuilder.WithNotificationEvent<OrderLineRemovingNotification>()
                 .RegisterHandler<OrderLineRemovingHandler>();
 
-            builder.WithNotificationEvent<OrderPaymentCountryRegionChangingNotification>()
+            commerceBuilder.WithNotificationEvent<OrderPaymentCountryRegionChangingNotification>()
                 .RegisterHandler<OrderPaymentCountryRegionChangingHandler>();
 
-            builder.WithNotificationEvent<OrderShippingCountryRegionChangingNotification>()
+            commerceBuilder.WithNotificationEvent<OrderShippingCountryRegionChangingNotification>()
                 .RegisterHandler<OrderShippingCountryRegionChangingHandler>();
 
-            builder.WithNotificationEvent<OrderShippingMethodChangingNotification>()
+            commerceBuilder.WithNotificationEvent<OrderShippingMethodChangingNotification>()
                 .RegisterHandler<OrderShippingMethodChangingHandler>();
-
-            // Toggle order editor shipping address enabled flag based on
-            // whether there umbraco commerce checkout is configured to collect a shipping address
-#pragma warning restore CS0618 // Type or member is obsolete
 
             return builder;
         }
 
         public static IBuilder AddUmbracoCommerceInstallPipeline(this IBuilder builder)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            builder.WithPipeline<InstallPipeline, InstallPipelineContext>()
-                .Append<CreateUmbracoCommerceCheckoutDataTypesTask>()
-                .Append<CreateUmbracoCommerceCheckoutDocumentTypesTask>()
-                .Append<CreateUmbracoCommerceCheckoutNodesTask>()
-                .Append<ConfigureUmbracoCommerceStoreTask>()
-                .Append<CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask>();
-#pragma warning restore CS0618 // Type or member is obsolete
+            IUmbracoCommerceBuilder commerceBuilder = builder.WithUmbracoCommerceBuilder();
+            commerceBuilder.WithAsyncPipeline<InstallAsyncPipelineTask, InstallPipelineContext>()
+                .Add<CreateUmbracoCommerceCheckoutDataTypesTask>()
+                .Add<CreateUmbracoCommerceCheckoutDocumentTypesTask>()
+                .Add<CreateUmbracoCommerceCheckoutNodesTask>()
+                .Add<ConfigureUmbracoCommerceStoreTask>()
+                .Add<CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask>();
 
             return builder;
         }

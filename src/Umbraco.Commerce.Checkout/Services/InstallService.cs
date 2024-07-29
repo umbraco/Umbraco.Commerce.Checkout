@@ -10,10 +10,10 @@ namespace Umbraco.Commerce.Checkout.Services
     {
         public async Task InstallAsync(int siteRootNodeId, StoreReadOnly store)
         {
-            PipelineResult<InstallPipelineContext> result = PipelineRunner.Invoke<InstallPipeline, InstallPipelineContext>(new InstallPipelineContext
+            PipelineResult<InstallPipelineContext> result = await PipelineRunner.InvokeAsync<InstallAsyncPipelineTask, InstallPipelineContext>(new InstallPipelineContext
             {
                 SiteRootNodeId = siteRootNodeId,
-                Store = store
+                Store = store,
             });
 
             if (!result.Success)

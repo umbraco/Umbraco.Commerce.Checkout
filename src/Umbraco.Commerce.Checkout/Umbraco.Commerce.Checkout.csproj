@@ -6,6 +6,7 @@
     <StaticWebAssetBasePath>App_Plugins/UmbracoCommerceCheckout</StaticWebAssetBasePath>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
     <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    <NoWarn>CA2007;CA1848</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,18 +20,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="**/*.cshtml" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="**/*.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="wwwroot/**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
-  <!-- Build client assets using NPM -->
-  <Import Project="build\Microsoft.AspNetCore.ClientAssets.targets" />
-  
-  <Target Name="ClientAssetsBuildOutputPath" BeforeTargets="ClientAssetsBuild">
-    <WriteLinesToFile File="Client\config.outputPath.js" Lines="exports.outputPath = '../$(IntermediateOutputPath.Replace('\', '/'))clientassets';" Overwrite="true" WriteOnlyWhenDifferent="true" />
-  </Target>
-  
-  <ItemGroup>
-    <ClientAssetsInputs Remove="Client\tailwind.config.js" />
-  </ItemGroup>
-  
 </Project>

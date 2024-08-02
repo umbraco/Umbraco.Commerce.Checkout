@@ -29,7 +29,7 @@
     <meta name="description" content="" />
     <meta name="keywords" content="" />
     <meta name="robots" content="noindex, nofollow" />
-    <link href="/App_Plugins/UmbracoCommerceCheckout/css/uccheckout.css" rel="stylesheet">
+    <link href="/App_Plugins/UmbracoCommerceCheckout/uccheckout.surface.css" rel="stylesheet">
     @RenderSection("head", false)
 </head>
 <body>
@@ -39,7 +39,7 @@
         <div class="absolute right-0 w-1/2 h-full lg:bg-gray-50"></div>
 
         <!-- Layout -->
-        <div class="relative flex flex-col min-h-full max-w-6xl mx-auto lg:flex-row-reverse lg:flex-row">
+        <div class="relative flex flex-col min-h-full max-w-6xl mx-auto lg:flex-row-reverse">
 
             <div class="bg-white p-8 text-center lg:hidden">
                 @if (checkoutPage.HasValue("uccStoreLogo"))
@@ -228,7 +228,7 @@
         </symbol>
     </svg>
 
-    <script src="/App_Plugins/UmbracoCommerceCheckout/js/uccheckout.js" defer></script>
+    <script src="/App_Plugins/UmbracoCommerceCheckout/uccheckout.surface.js" defer async></script>
 
     @RenderSection("foot", false)
 

@@ -479,3 +479,7 @@ $RECYCLE.BIN/
 ##
 ## Umbraco Commerce specific
 ##
+/src/Umbraco.Commerce.Checkout/wwwroot/
+.vscode
+/src/Umbraco.Commerce.Checkout/packages.lock.json
+/src/Umbraco.Commerce.Checkout/packages.lock.json

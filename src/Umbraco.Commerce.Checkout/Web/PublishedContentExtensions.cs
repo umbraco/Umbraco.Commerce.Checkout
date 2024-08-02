@@ -1,15 +1,15 @@
-using Umbraco.Commerce.Core.Models;
 using System.Linq;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Commerce.Core.Models;
 using Umbraco.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Web
 {
     public static class PublishedContentExtensions
     {
-        public static StoreReadOnly GetStore(this IPublishedContent content)
+        public static StoreReadOnly? GetStore(this IPublishedContent content)
         {
-            return content.Value<StoreReadOnly>(Cms.Constants.Properties.StorePropertyAlias, fallback:Fallback.ToAncestors);
+            return content.Value<StoreReadOnly>(Cms.Constants.Properties.StorePropertyAlias, fallback: Fallback.ToAncestors);
         }
 
         public static IPublishedContent GetCheckoutPage(this IPublishedContent content)
@@ -19,14 +19,14 @@ namespace Umbraco.Commerce.Checkout.Web
 
         public static IPublishedContent GetCheckoutBackPage(this IPublishedContent content)
         {
-            return GetCheckoutPage(content).Value<IPublishedContent>("uccBackPage");
+            return GetCheckoutPage(content).Value<IPublishedContent>("uccBackPage")!;
         }
 
         public static string GetThemeColor(this IPublishedContent content)
         {
-            var themeColor = GetCheckoutPage(content).Value("uccThemeColor", defaultValue: "000000");
+            string themeColor = GetCheckoutPage(content).Value("uccThemeColor", defaultValue: "#000000")!.TrimStart('#');
 
-            if (UmbracoCommerceCheckoutConstants.ColorMap.TryGetValue(themeColor, out string value))
+            if (UmbracoCommerceCheckoutConstants.ColorMap.TryGetValue(themeColor, out string? value))
             {
                 return value;
             }

@@ -22,7 +22,7 @@ parameters:
     default: false
 
 variables:
-  nodeVersion: 18.x
+  nodeVersion: 20.x
   solution: Umbraco.Commerce.Checkout.sln
   buildConfiguration: Release
   DOTNET_NOLOGO: true
@@ -68,6 +68,18 @@ stages:
                 npm | "$(Agent.OS)"
                 npm
               path: $(npm_config_cache)
+          
+          - task: CmdLine@2
+            displayName: 'Install NPM packages'
+            inputs:
+              script: 'npm ci --no-fund --no-audit --prefer-offline'
+              workingDirectory: '$(Build.SourcesDirectory)/src/Umbraco.Commerce.Checkout/Client'
+  
+          - task: CmdLine@2
+            displayName: 'Build frontend'
+            inputs:
+              workingDirectory: $(Build.SourcesDirectory)/src/Umbraco.Commerce.Checkout/Client
+              script: 'npm run build'
 
           # Cache and restore NuGet packages
           - task: Cache@2

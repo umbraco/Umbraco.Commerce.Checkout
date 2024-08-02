@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Common.Pipelines.Tasks;
 using Umbraco.Commerce.Core.Api;
@@ -5,7 +7,7 @@ using Umbraco.Commerce.Core.Models;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask : PipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask : AsyncPipelineTaskBase<InstallPipelineContext>
     {
         private readonly IUmbracoCommerceApi _commerceApi;
 
@@ -14,17 +16,17 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             _commerceApi = commerceApi;
         }
 
-        public override PipelineResult<InstallPipelineContext> Execute(PipelineArgs<InstallPipelineContext> args)
+        public override Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
         {
-            _commerceApi.Uow.Execute(uow => 
+            _commerceApi.Uow.Execute(uow =>
             {
                 if (!_commerceApi.PaymentMethodExists(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
                 {
                     var paymentMethod = PaymentMethod.Create(uow, args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue, "[Umbraco Commerce Checkout] Zero Value", "zeroValue");
 
                     paymentMethod.SetSku("UCCZV01")
-                        .SetTaxClass(args.Model.Store.DefaultTaxClassId.Value)
-                        .AllowInCountry(args.Model.Store.DefaultCountryId.Value);
+                        .SetTaxClass(args.Model.Store.DefaultTaxClassId!.Value)
+                        .AllowInCountry(args.Model.Store.DefaultCountryId!.Value);
 
                     // We need to set the Continue URL to the checkout confirmation page
                     // but we create nodes as unpublished, thus without a URL so we'll
@@ -37,7 +39,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                 uow.Complete();
             });
 
-            return Ok();
+            return Task.FromResult(Ok());
         }
     }
 }

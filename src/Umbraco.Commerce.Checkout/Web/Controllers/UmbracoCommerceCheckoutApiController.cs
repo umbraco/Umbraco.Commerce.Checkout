@@ -1,22 +1,25 @@
 using System;
 using System.Threading.Tasks;
 using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Umbraco.Cms.Api.Management.Controllers;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Web.Common.Authorization;
 using Umbraco.Commerce.Checkout.Services;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
 {
-    [ApiController]
     [ApiVersion("1.0")]
     [VersionedApiBackOfficeRoute("umbraco-commerce-checkout")]
     [ApiExplorerSettings(GroupName = "Umbraco Commerce Checkout API")]
-    //[Authorize(Policy = AuthorizationPolicies.SectionAccessSettings)]
-    public class UmbracoCommerceCheckoutApiController : Controller
+    [Authorize]
+    [Authorize(AuthorizationPolicies.SectionAccessSettings)]
+    public class UmbracoCommerceCheckoutApiController : ManagementApiControllerBase
     {
         private readonly IUmbracoCommerceApi _commerceApi;
         private readonly IContentService _contentService;

@@ -8,9 +8,11 @@ using Umbraco.Commerce.Checkout.Exceptions;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Extensions;
+using Umbraco.Commerce.Checkout.Web.Controllers.Filters;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
 {
+    [NoStoreCacheControl]
     public abstract class UmbracoCommerceCheckoutBaseController : RenderController
     {
         protected UmbracoCommerceCheckoutBaseController(

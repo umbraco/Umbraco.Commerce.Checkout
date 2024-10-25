@@ -6,9 +6,11 @@ using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Web.Common.Controllers;
 using Umbraco.Extensions;
+using Umbraco.Commerce.Checkout.Web.Controllers.Filters;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
 {
+    [NoStoreCacheControl]
     public abstract class UmbracoCommerceCheckoutBaseController : RenderController
     {
         public UmbracoCommerceCheckoutBaseController(ILogger<UmbracoCommerceCheckoutBaseController> logger, ICompositeViewEngine compositeViewEngine, IUmbracoContextAccessor umbracoContextAccessor)

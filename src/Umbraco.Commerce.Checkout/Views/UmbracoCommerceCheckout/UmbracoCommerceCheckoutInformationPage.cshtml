@@ -5,9 +5,9 @@
 
     var store = Model.GetStore();
 
-    var currentOrder = UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id);
+    var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id);
 
-    var countries = UmbracoCommerceApi.Instance.GetCountries(store.Id);
+    var countries = await UmbracoCommerceApi.Instance.GetCountriesAsync(store.Id);
 
     var checkoutPage = Model.GetCheckoutPage();
     var nextStepPage = Model.GetNextStepPage();
@@ -72,11 +72,11 @@
             @foreach (var country in countries)
             {
                 <option value="@(country.Id)" @Html.Raw(currentOrder.PaymentInfo.CountryId == country.Id ? "selected=\"selected\"" : "")
-                        data-regions="@(JsonConvert.SerializeObject(UmbracoCommerceApi.Instance.GetRegions(country.StoreId, country.Id).Select(x => new
+                        data-regions="@(JsonConvert.SerializeObject((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
                 {
-                            id = x.Id,
-                            name = x.Name
-                        })))">
+                    id = x.Id,
+                    name = x.Name,
+                })))">
                     @(country.Name)
                 </option>
             }
@@ -119,10 +119,11 @@
                     @foreach (var country in countries)
                     {
                         <option value="@(country.Id)" @Html.Raw(currentOrder.ShippingInfo.CountryId == country.Id ? "selected=\"selected\"" : "")
-                                data-regions="@(JsonConvert.SerializeObject(UmbracoCommerceApi.Instance.GetRegions(country.StoreId, country.Id).Select(x => new {
-                                    id = x.Id,
-                                    name = x.Name
-                                })))">
+                                data-regions="@(JsonConvert.SerializeObject((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
+                        {
+                            id = x.Id,
+                            name = x.Name,
+                        })))">
                             @(country.Name)
                         </option>
                     }

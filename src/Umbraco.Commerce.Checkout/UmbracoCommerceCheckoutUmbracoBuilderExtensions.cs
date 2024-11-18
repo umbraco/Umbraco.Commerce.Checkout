@@ -46,7 +46,7 @@ namespace Umbraco.Commerce.Checkout
             builder.Services.AddSingleton<InstallService>();
 
             // Register Umbraco event handlers
-            builder.AddNotificationHandler<ContentCacheRefresherNotification, SyncZeroValuePaymentProviderContinueUrl>();
+            builder.AddNotificationAsyncHandler<ContentCacheRefresherNotification, SyncZeroValuePaymentProviderContinueUrl>();
 
             return builder;
         }

@@ -12,7 +12,7 @@ namespace Umbraco.Commerce.Checkout
         }
 
 #pragma warning disable IDE1006 // Naming Styles
-        public static IReadOnlyDictionary<string, string> ColorMap = new Dictionary<string, string>
+        public static readonly IReadOnlyDictionary<string, string> ColorMap = new Dictionary<string, string>
         {
             { "000000", "black" },
             { "ef4444", "red-500" },
@@ -59,13 +59,13 @@ namespace Umbraco.Commerce.Checkout
             public static class Guids
             {
                 public const string BasePage = "55f4b88e-69b6-45a4-bc4f-d48f35f6b904";
-                public static readonly Guid BasePageGuid = new Guid(BasePage);
+                public static readonly Guid BasePageGuid = new(BasePage);
 
                 public const string CheckoutPage = "e5e809cf-f3e5-4bb8-b7bb-c67c8303c2f4";
-                public static readonly Guid CheckoutPageGuid = new Guid(CheckoutPage);
+                public static readonly Guid CheckoutPageGuid = new(CheckoutPage);
 
                 public const string CheckoutStepPage = "d9384576-e6a8-4ef2-8ca8-475ee6e7546d";
-                public static readonly Guid CheckoutStepPageGuid = new Guid(CheckoutStepPage);
+                public static readonly Guid CheckoutStepPageGuid = new(CheckoutStepPage);
             }
         }
     }

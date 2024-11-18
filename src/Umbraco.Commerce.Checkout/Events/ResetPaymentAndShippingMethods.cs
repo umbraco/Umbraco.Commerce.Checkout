@@ -1,7 +1,8 @@
+using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Umbraco.Commerce.Checkout.Configuration;
 using Umbraco.Commerce.Common.Events;
 using Umbraco.Commerce.Core.Events.Notification;
-using Microsoft.Extensions.Options;
 
 namespace Umbraco.Commerce.Checkout.Events
 {
@@ -13,63 +14,63 @@ namespace Umbraco.Commerce.Checkout.Events
 
     public class OrderProductAddingHandler : NotificationEventHandlerBase<OrderProductAddingNotification>
     {
-        public override void Handle(OrderProductAddingNotification evt)
+        public override async Task HandleAsync(OrderProductAddingNotification evt)
         {
             if (!evt.Order.IsFinalized)
             {
-                evt.Order.ClearShippingMethod();
-                evt.Order.ClearPaymentMethod();
+                _ = await evt.Order.ClearShippingMethodAsync();
+                _ = await evt.Order.ClearPaymentMethodAsync();
             }
         }
     }
 
     public class OrderLineChangingHandler : NotificationEventHandlerBase<OrderLineChangingNotification>
     {
-        public override void Handle(OrderLineChangingNotification evt)
+        public override async Task HandleAsync(OrderLineChangingNotification evt)
         {
             if (!evt.Order.IsFinalized)
             {
-                evt.Order.ClearShippingMethod();
-                evt.Order.ClearPaymentMethod();
+                _ = await evt.Order.ClearShippingMethodAsync();
+                _ = await evt.Order.ClearPaymentMethodAsync();
             }
         }
     }
 
     public class OrderLineRemovingHandler : NotificationEventHandlerBase<OrderLineRemovingNotification>
     {
-        public override void Handle(OrderLineRemovingNotification evt)
+        public override async Task HandleAsync(OrderLineRemovingNotification evt)
         {
             if (!evt.Order.IsFinalized)
             {
-                evt.Order.ClearShippingMethod();
-                evt.Order.ClearPaymentMethod();
+                _ = await evt.Order.ClearShippingMethodAsync();
+                _ = await evt.Order.ClearPaymentMethodAsync();
             }
         }
     }
 
     public class OrderPaymentCountryRegionChangingHandler : NotificationEventHandlerBase<OrderPaymentCountryRegionChangingNotification>
     {
-        public override void Handle(OrderPaymentCountryRegionChangingNotification evt)
+        public override async Task HandleAsync(OrderPaymentCountryRegionChangingNotification evt)
         {
             if (!evt.Order.IsFinalized)
             {
-                evt.Order.ClearPaymentMethod();
+                _ = await evt.Order.ClearPaymentMethodAsync();
             }
         }
     }
 
     public class OrderShippingCountryRegionChangingHandler : NotificationEventHandlerBase<OrderShippingCountryRegionChangingNotification>
     {
-        public override void Handle(OrderShippingCountryRegionChangingNotification evt)
+        public override async Task HandleAsync(OrderShippingCountryRegionChangingNotification evt)
         {
             if (!evt.Order.IsFinalized)
             {
-                evt.Order.ClearShippingMethod();
-                evt.Order.ClearPaymentMethod();
+                _ = await evt.Order.ClearShippingMethodAsync();
+                _ = await evt.Order.ClearPaymentMethodAsync();
             }
         }
     }
-     
+
     public class OrderShippingMethodChangingHandler : NotificationEventHandlerBase<OrderShippingMethodChangingNotification>
     {
         private readonly UmbracoCommerceCheckoutSettings _settings;
@@ -79,11 +80,11 @@ namespace Umbraco.Commerce.Checkout.Events
             _settings = settings.Value;
         }
 
-        public override void Handle(OrderShippingMethodChangingNotification evt)
+        public override async Task HandleAsync(OrderShippingMethodChangingNotification evt)
         {
             if (!evt.Order.IsFinalized && _settings.ResetPaymentMethodOnShippingMethodChange)
             {
-                evt.Order.ClearPaymentMethod();
+                _ = await evt.Order.ClearPaymentMethodAsync();
             }
         }
     }

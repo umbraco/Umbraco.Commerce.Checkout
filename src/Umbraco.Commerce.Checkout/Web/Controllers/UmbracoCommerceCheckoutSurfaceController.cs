@@ -1,22 +1,23 @@
-using System.Linq;
+using System;
 using System.Collections.Generic;
-using Umbraco.Commerce.Checkout.Web.Dtos;
-using Umbraco.Commerce.Core.Api;
-using Umbraco.Commerce.Extensions;
-using Umbraco.Commerce.Common.Validation;
-using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Umbraco.Cms.Core.Web;
-using Umbraco.Cms.Infrastructure.Persistence;
-using Umbraco.Cms.Core.Services;
+using Microsoft.AspNetCore.Mvc;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Logging;
 using Umbraco.Cms.Core.Routing;
-using Umbraco.Cms.Web.Website.Controllers;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Infrastructure.Persistence;
 using Umbraco.Cms.Web.Common.Filters;
-using Umbraco.Extensions;
+using Umbraco.Cms.Web.Website.Controllers;
+using Umbraco.Commerce.Checkout.Web.Dtos;
 using Umbraco.Commerce.Common.Models;
-
+using Umbraco.Commerce.Common.Validation;
+using Umbraco.Commerce.Core.Api;
+using Umbraco.Commerce.Extensions;
+using Umbraco.Extensions;
 using UmbracoCommerceConstants = Umbraco.Commerce.Core.Constants;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
@@ -25,8 +26,13 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
     {
         private readonly IUmbracoCommerceApi _commerceApi;
 
-        public UmbracoCommerceCheckoutSurfaceController(IUmbracoContextAccessor umbracoContextAccessor, IUmbracoDatabaseFactory databaseFactory, 
-            ServiceContext services, AppCaches appCaches, IProfilingLogger profilingLogger, IPublishedUrlProvider publishedUrlProvider,
+        public UmbracoCommerceCheckoutSurfaceController(
+            IUmbracoContextAccessor umbracoContextAccessor,
+            IUmbracoDatabaseFactory databaseFactory,
+            ServiceContext services,
+            AppCaches appCaches,
+            IProfilingLogger profilingLogger,
+            IPublishedUrlProvider publishedUrlProvider,
             IUmbracoCommerceApi commerceApi)
             : base(umbracoContextAccessor, databaseFactory, services, appCaches, profilingLogger, publishedUrlProvider)
         {
@@ -36,83 +42,84 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateUmbracoFormRouteString]
-        public IActionResult ApplyDiscountOrGiftCardCode(UccDiscountOrGiftCardCodeDto model)
+        public async Task<IActionResult> ApplyDiscountOrGiftCardCode(UccDiscountOrGiftCardCodeDto model)
         {
             try
             {
-                _commerceApi.Uow.Execute(uow =>
+                await _commerceApi.Uow.ExecuteAsync(async uow =>
                 {
-                    var store = CurrentPage.GetStore();
-                    var order = _commerceApi.GetCurrentOrder(store.Id)
-                        .AsWritable(uow)
-                        .Redeem(model.Code);
+                    Core.Models.StoreReadOnly store = CurrentPage!.GetStore();
+                    Core.Models.Order order = await _commerceApi.GetCurrentOrderAsync(store.Id)
+                        .AsWritableAsync(uow)
+                        .RedeemAsync(model.Code);
 
-                    _commerceApi.SaveOrder(order);
+                    await _commerceApi.SaveOrderAsync(order);
 
                     uow.Complete();
                 });
             }
             catch (ValidationException ex)
             {
-                ModelState.AddModelError("code", "Failed to redeem discount code: "+ ex.Message);
+                ModelState.AddModelError("code", "Failed to redeem discount code: " + ex.Message);
 
                 return IsAjaxRequest()
-                    ? (IActionResult)Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
+                    ? Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
                     : CurrentUmbracoPage();
             }
 
             return IsAjaxRequest()
-                ? (IActionResult)Json(new { success = true })
+                ? Json(new { success = true })
                 : RedirectToCurrentUmbracoPage();
         }
 
         [HttpGet]
         [ValidateUmbracoFormRouteString]
-        public IActionResult RemoveDiscountOrGiftCardCode(UccDiscountOrGiftCardCodeDto model)
+        public async Task<IActionResult> RemoveDiscountOrGiftCardCode(UccDiscountOrGiftCardCodeDto model)
         {
             try
             {
-                _commerceApi.Uow.Execute(uow =>
+                await _commerceApi.Uow.ExecuteAsync(async uow =>
                 {
-                    var store = CurrentPage.GetStore();
-                    var order = _commerceApi.GetCurrentOrder(store.Id)
-                        .AsWritable(uow)
-                        .Unredeem(model.Code);
+                    Core.Models.StoreReadOnly store = CurrentPage!.GetStore();
+                    Core.Models.Order order = await _commerceApi.GetCurrentOrderAsync(store.Id)
+                        .AsWritableAsync(uow)
+                        .UnredeemAsync(model.Code);
 
-                    _commerceApi.SaveOrder(order);
+                    await _commerceApi.SaveOrderAsync(order);
 
                     uow.Complete();
                 });
             }
             catch (ValidationException ex)
             {
-                ModelState.AddModelError("", "Failed to unredeem discount code: " + ex.Message);
+                ModelState.AddModelError(string.Empty, "Failed to unredeem discount code: " + ex.Message);
 
                 return IsAjaxRequest()
-                    ? (IActionResult)JsonGet(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
+                    ? JsonGet(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
                     : CurrentUmbracoPage();
             }
 
             return IsAjaxRequest()
-                ? (IActionResult)JsonGet(new { success = true })
+                ? JsonGet(new { success = true })
                 : RedirectToCurrentUmbracoPage();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateUmbracoFormRouteString]
-        public IActionResult UpdateOrderInformation(UccUpdateOrderInformationDto model)
+        public async Task<IActionResult> UpdateOrderInformation(UccUpdateOrderInformationDto model)
         {
+            ArgumentNullException.ThrowIfNull(model);
             try
             {
-                var checkoutPage = CurrentPage.GetCheckoutPage();
+                Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent checkoutPage = CurrentPage!.GetCheckoutPage();
 
-                _commerceApi.Uow.Execute(uow =>
+                await _commerceApi.Uow.ExecuteAsync(async uow =>
                 {
-                    var store = CurrentPage.GetStore();
-                    var order = _commerceApi.GetCurrentOrder(store.Id)
-                        .AsWritable(uow)
-                        .SetProperties(new Dictionary<string, string>
+                    Core.Models.StoreReadOnly? store = CurrentPage!.GetStore();
+                    Core.Models.Order order = await _commerceApi.GetCurrentOrderAsync(store.Id)
+                        .AsWritableAsync(uow)
+                        .SetPropertiesAsync(new Dictionary<string, string>
                         {
                             { UmbracoCommerceConstants.Properties.Customer.EmailPropertyAlias, model.Email },
                             { "marketingOptIn", model.MarketingOptIn ? "1" : "0" },
@@ -127,11 +134,11 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
                             { "comments", model.Comments },
                             { "ipAddress", GetIPAddress() }
                         })
-                        .SetPaymentCountryRegion(model.BillingAddress.Country, model.BillingAddress.Region);
+                        .SetPaymentCountryRegionAsync(model.BillingAddress.Country, model.BillingAddress.Region);
 
                     if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
                     {
-                        order.SetProperties(new Dictionary<string, string>
+                        await order.SetPropertiesAsync(new Dictionary<string, string>
                         {
                             { "shippingSameAsBilling", model.ShippingSameAsBilling ? "1" : "0" },
                             { "shippingFirstName", model.ShippingSameAsBilling? model.BillingAddress.FirstName : model.ShippingAddress.FirstName },
@@ -142,31 +149,32 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
                             { "shippingZipCode", model.ShippingSameAsBilling? model.BillingAddress.ZipCode : model.ShippingAddress.ZipCode },
                             { "shippingTelephone", model.ShippingSameAsBilling? model.BillingAddress.Telephone : model.ShippingAddress.Telephone }
                         })
-                        .SetShippingCountryRegion(model.ShippingSameAsBilling ? model.BillingAddress.Country : model.ShippingAddress.Country,
-                            model.ShippingSameAsBilling ? model.BillingAddress.Region : model.ShippingAddress.Region);
+                         .SetShippingCountryRegionAsync(
+                             model.ShippingSameAsBilling ? model.BillingAddress.Country : model.ShippingAddress.Country,
+                             model.ShippingSameAsBilling ? model.BillingAddress.Region : model.ShippingAddress.Region);
                     }
                     else
                     {
-                        order.SetShippingCountryRegion(model.BillingAddress.Country, null)
-                            .ClearShippingMethod();
+                        await order.SetShippingCountryRegionAsync(model.BillingAddress.Country, null)
+                            .ClearShippingMethodAsync();
                     }
 
-                    _commerceApi.SaveOrder(order);
+                    await _commerceApi.SaveOrderAsync(order);
 
                     uow.Complete();
                 });
             }
             catch (ValidationException ex)
             {
-                ModelState.AddModelError("", "Failed to update information: " + ex.Message);
+                ModelState.AddModelError(string.Empty, "Failed to update information: " + ex.Message);
 
                 return IsAjaxRequest()
-                    ? (IActionResult)Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
+                    ? Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
                     : CurrentUmbracoPage();
             }
 
             return IsAjaxRequest()
-                ? (IActionResult)Json(new { success = true })
+                ? Json(new { success = true })
                 : model.NextStep.HasValue
                     ? RedirectToUmbracoPage(model.NextStep.Value)
                     : RedirectToCurrentUmbracoPage();
@@ -175,52 +183,53 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateUmbracoFormRouteString]
-        public IActionResult UpdateOrderShippingMethod(UccUpdateOrderShippingMethodDto model)
+        public async Task<IActionResult> UpdateOrderShippingMethod(UccUpdateOrderShippingMethodDto model)
         {
+            ArgumentNullException.ThrowIfNull(model);
             try
             {
-                _commerceApi.Uow.Execute(uow =>
+                await _commerceApi.Uow.ExecuteAsync(async uow =>
                 {
-                    var checkoutPage = CurrentPage.GetCheckoutPage();
-                    var store = CurrentPage.GetStore();
-                    var order = _commerceApi.GetCurrentOrder(store.Id)
-                        .AsWritable(uow);
+                    Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent checkoutPage = CurrentPage!.GetCheckoutPage();
+                    Core.Models.StoreReadOnly? store = CurrentPage!.GetStore();
+                    Core.Models.Order order = await _commerceApi.GetCurrentOrderAsync(store.Id)
+                        .AsWritableAsync(uow);
 
                     if (!model.ShippingOptionId.IsNullOrWhiteSpace())
                     {
-                        var shippingMethod = _commerceApi.GetShippingMethod(model.ShippingMethod);
-                        var shippingRateAttempt = shippingMethod.TryCalculateRate(model.ShippingOptionId, order);
+                        Core.Models.ShippingMethodReadOnly shippingMethod = await _commerceApi.GetShippingMethodAsync(model.ShippingMethod);
+                        Attempt<Core.Models.ShippingRate> shippingRateAttempt = await shippingMethod.TryCalculateRateAsync(model.ShippingOptionId, order);
 
                         if (shippingRateAttempt.Success)
                         {
-                            order.SetShippingMethod(model.ShippingMethod, shippingRateAttempt.Result.Option);
+                            await order.SetShippingMethodAsync(model.ShippingMethod, shippingRateAttempt.Result!.Option);
                         }
                         else
                         {
-                            throw new ValidationException(new[] { new ValidationError("Unable to locate the selected shipping option") });
+                            throw new ValidationException([new ValidationError("Unable to locate the selected shipping option")]);
                         }
                     }
                     else
                     {
-                        order.SetShippingMethod(model.ShippingMethod);
+                        await order.SetShippingMethodAsync(model.ShippingMethod);
                     }
 
-                    _commerceApi.SaveOrder(order);
+                    await _commerceApi.SaveOrderAsync(order);
 
                     uow.Complete();
                 });
             }
             catch (ValidationException ex)
             {
-                ModelState.AddModelError("", "Failed to update shipping method: " + ex.Message);
+                ModelState.AddModelError(string.Empty, "Failed to update shipping method: " + ex.Message);
 
                 return IsAjaxRequest()
-                    ? (IActionResult)Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
+                    ? Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
                     : CurrentUmbracoPage();
             }
 
             return IsAjaxRequest()
-                ? (IActionResult)Json(new { success = true })
+                ? Json(new { success = true })
                 : model.NextStep.HasValue
                     ? RedirectToUmbracoPage(model.NextStep.Value)
                     : RedirectToCurrentUmbracoPage();
@@ -229,34 +238,35 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ValidateUmbracoFormRouteString]
-        public IActionResult UpdateOrderPaymentMethod(UccUpdateOrderPaymentMethodDto model)
+        public async Task<IActionResult> UpdateOrderPaymentMethod(UccUpdateOrderPaymentMethodDto model)
         {
+            ArgumentNullException.ThrowIfNull(model);
             try
             {
-                _commerceApi.Uow.Execute(uow =>
+                await _commerceApi.Uow.ExecuteAsync(async uow =>
                 {
-                    var checkoutPage = CurrentPage.GetCheckoutPage();
-                    var store = CurrentPage.GetStore();
-                    var order = _commerceApi.GetCurrentOrder(store.Id)
-                        .AsWritable(uow)
-                        .SetPaymentMethod(model.PaymentMethod);
+                    Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent checkoutPage = CurrentPage!.GetCheckoutPage();
+                    Core.Models.StoreReadOnly store = CurrentPage!.GetStore();
+                    Core.Models.Order order = await _commerceApi.GetCurrentOrderAsync(store.Id)
+                        .AsWritableAsync(uow)
+                        .SetPaymentMethodAsync(model.PaymentMethod);
 
-                    _commerceApi.SaveOrder(order);
+                    await _commerceApi.SaveOrderAsync(order);
 
                     uow.Complete();
                 });
             }
             catch (ValidationException ex)
             {
-                ModelState.AddModelError("", "Failed to update payment method: " + ex.Message);
+                ModelState.AddModelError(string.Empty, "Failed to update payment method: " + ex.Message);
 
                 return IsAjaxRequest()
-                    ? (IActionResult)Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
+                    ? Json(new { success = false, errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage) })
                     : CurrentUmbracoPage();
             }
 
             return IsAjaxRequest()
-                ? (IActionResult)Json(new { success = true })
+                ? Json(new { success = true })
                 : model.NextStep.HasValue
                     ? RedirectToUmbracoPage(model.NextStep.Value)
                     : RedirectToCurrentUmbracoPage();
@@ -264,21 +274,23 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
 
         private string GetIPAddress()
         {
-            var ipAddress = HttpContext.GetServerVariable("HTTP_X_FORWARDED_FOR");
+            string? ipAddress = HttpContext.GetServerVariable("HTTP_X_FORWARDED_FOR");
             if (!string.IsNullOrEmpty(ipAddress))
             {
                 string[] addresses = ipAddress.Split(',');
                 if (addresses.Length != 0)
+                {
                     return addresses[0];
+                }
             }
 
-            return HttpContext.GetServerVariable("REMOTE_ADDR");
+            return HttpContext.GetServerVariable("REMOTE_ADDR") ?? string.Empty;
         }
 
         private bool IsAjaxRequest()
         {
-            var headerName = "X-Requested-With";
-            var headerValue = "xmlhttprequest";
+            string headerName = "X-Requested-With";
+            string headerValue = "xmlhttprequest";
 
             return (Request.Query.ContainsKey(headerName) && Request.Query[headerName].ToString().InvariantEquals(headerValue))
                 || (Request.HasFormContentType && Request.Form.ContainsKey(headerName) && Request.Form[headerName].ToString().InvariantEquals(headerValue))

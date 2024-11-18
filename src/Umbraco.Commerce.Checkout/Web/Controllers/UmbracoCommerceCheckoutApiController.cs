@@ -50,7 +50,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
                 return new { success = false, message = "Couldn't find a store connected to the site root node. Do you have a store picker configured?" };
             }
 
-            StoreReadOnly store = _commerceApi.GetStore(storeId.Value);
+            StoreReadOnly store = await _commerceApi.GetStoreAsync(storeId.Value);
             if (store == null)
             {
                 return new { success = false, message = "Couldn't find a store connected to the site root node. Do you have a store picker configured?" };

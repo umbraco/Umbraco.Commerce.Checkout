@@ -4,16 +4,16 @@
 
     var store = Model.GetStore();
 
-    var currentOrder = UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id);
+    var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id);
 
     var paymentCountry = currentOrder.PaymentInfo.CountryId.HasValue
-        ? UmbracoCommerceApi.Instance.GetCountry(currentOrder.PaymentInfo.CountryId.Value)
+        ? await UmbracoCommerceApi.Instance.GetCountryAsync(currentOrder.PaymentInfo.CountryId.Value)
         : null;
     var paymentRegion = currentOrder.PaymentInfo.RegionId.HasValue
-        ? UmbracoCommerceApi.Instance.GetCountry(currentOrder.PaymentInfo.RegionId.Value)
+        ? await UmbracoCommerceApi.Instance.GetCountryAsync(currentOrder.PaymentInfo.RegionId.Value)
         : null;
 
-    var paymentMethods = UmbracoCommerceApi.Instance.GetPaymentMethodsAllowedIn(currentOrder.PaymentInfo.CountryId.Value,
+    var paymentMethods = await UmbracoCommerceApi.Instance.GetPaymentMethodsAllowedInAsync(currentOrder.PaymentInfo.CountryId.Value,
         currentOrder.PaymentInfo.RegionId);
 
     var currentPaymentMethodId = currentOrder.PaymentInfo.PaymentMethodId.HasValue
@@ -40,16 +40,16 @@
     {
         <ul class="border border-gray-300 rounded">
             @foreach (var item in paymentMethods.Where(x => zeroValuePaymentMethod == null || x.Alias != zeroValuePaymentMethod.Alias)
-               .Select((pm, i) => new { PaymentMethod = pm, Index = i }))
+           .Select((pm, i) => new { PaymentMethod = pm, Index = i }))
             {
-                var fee = item.PaymentMethod.TryCalculateFee(currentOrder);
+                var fee = await item.PaymentMethod.TryCalculateFeeAsync(currentOrder);
                 if (fee.Success)
                 {
                     <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">
                         <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-50">
                             <input name="paymentMethod" type="radio" value="@item.PaymentMethod.Id" class="mr-3" @Html.Raw(currentPaymentMethodId.HasValue && currentPaymentMethodId.Value == item.PaymentMethod.Id ? "checked=\"checked\"" : "") required />
                             <span class="font-medium">@(item.PaymentMethod.Name)</span>
-                            <span class="flex-1 text-right">@(fee.Result?.Formatted())</span>
+                            <span class="flex-1 text-right">@(fee.Result != null ? await fee.Result.FormattedAsync() : string.Empty)</span>
                         </label>
                     </li>
                 }
@@ -61,6 +61,6 @@
         <input type="hidden" name="paymentMethod" value="@(zeroValuePaymentMethod.Id)" />
         <div class="border border-gray-300 rounded py-4 px-4 text-center">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.PaymentMethod.NothingToPay", "It looks like today is your lucky day, there is nothing for you to pay 🎉")</div>
     }
-    
+
     @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

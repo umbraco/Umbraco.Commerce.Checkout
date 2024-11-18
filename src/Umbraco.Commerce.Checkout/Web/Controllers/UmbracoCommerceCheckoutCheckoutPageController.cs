@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
@@ -20,20 +22,26 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             : base(logger, compositeViewEngine, umbracoContextAccessor)
         { }
 
-        public override IActionResult Index()
+        public new async Task<IActionResult> Index()
         {
-            // Check the cart is valid before continuing 
-            if (!IsValidCart(out var redirectUrl))
-                return Redirect(redirectUrl);
+            // Check the cart is valid before continuing
+            if (!await IsValidCartAsync())
+            {
+                return Redirect(InvalidCartRedirectUrl);
+            }
 
+            ArgumentNullException.ThrowIfNull(CurrentPage);
             // If the page has a template, use it
             if (CurrentPage.TemplateId.HasValue && CurrentPage.TemplateId.Value > 0)
-                return base.Index();
+            {
+                return await base.Index();
+            }
 
             // No template so redirect to the first child if one exists
+            // TODO - Dinh: solve obsolete warning
             if (CurrentPage.Children != null)
             {
-                var firstChild = CurrentPage.Children.FirstOrDefault();
+                Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent? firstChild = CurrentPage.Children.FirstOrDefault();
                 if (firstChild != null)
                 {
                     return RedirectPermanent(firstChild.Url());

@@ -1,30 +1,32 @@
 @inherits UmbracoCommerceRazorTemplateView<OrderReadOnly>
 @{
     // Get order entities
-    var store = UmbracoCommerceApi.GetStore(Model.StoreId);
+    var store = await UmbracoCommerceApi.GetStoreAsync(Model.StoreId);
     var paymentMethod = Model.PaymentInfo.PaymentMethodId.HasValue
-        ? UmbracoCommerceApi.GetPaymentMethod(Model.PaymentInfo.PaymentMethodId.Value)
+        ? await UmbracoCommerceApi.GetPaymentMethodAsync(Model.PaymentInfo.PaymentMethodId.Value)
         : null;
     var paymentCountry = Model.PaymentInfo.CountryId.HasValue
-        ? UmbracoCommerceApi.GetCountry(Model.PaymentInfo.CountryId.Value)
+        ? await UmbracoCommerceApi.GetCountryAsync(Model.PaymentInfo.CountryId.Value)
         : null;
     var paymentRegion = Model.PaymentInfo.RegionId.HasValue
-        ? UmbracoCommerceApi.GetRegion(Model.PaymentInfo.RegionId.Value)
+        ? await UmbracoCommerceApi.GetRegionAsync(Model.PaymentInfo.RegionId.Value)
         : null;
     var shippingMethod = Model.ShippingInfo.ShippingMethodId.HasValue
-        ? UmbracoCommerceApi.GetShippingMethod(Model.ShippingInfo.ShippingMethodId.Value)
+        ? await UmbracoCommerceApi.GetShippingMethodAsync(Model.ShippingInfo.ShippingMethodId.Value)
         : null;
     var shippingCountry = Model.ShippingInfo.CountryId.HasValue
-        ? UmbracoCommerceApi.GetCountry(Model.ShippingInfo.CountryId.Value)
+        ? await UmbracoCommerceApi.GetCountryAsync(Model.ShippingInfo.CountryId.Value)
         : null;
     var shippingRegion = Model.ShippingInfo.RegionId.HasValue
-      ? UmbracoCommerceApi.GetRegion(Model.ShippingInfo.RegionId.Value)
+      ? await UmbracoCommerceApi.GetRegionAsync(Model.ShippingInfo.RegionId.Value)
       : null;
 
     // Lookup the umbraco commerce checkout page for the associated orders store
     // so that we can extract relevant settings to configure the email template
-    var ctx = this.GetService<IUmbracoContextFactory>().EnsureUmbracoContext().UmbracoContext;
-    var checkoutContentType = ctx.Content.GetContentType("uccCheckoutPage");
+    var ctx = this.GetRequiredService<IUmbracoContextFactory>().EnsureUmbracoContext().UmbracoContext;
+    // TODO - Dinh:
+    var publishedContentTypeCache = this.GetRequiredService<IPublishedContentTypeCache>();
+    var checkoutContentType = ctx.Content.GetContentType(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage);
     var checkoutPages = ctx.Content.GetByContentType(checkoutContentType);
     var checkoutPage = checkoutPages.First(x => x.GetStore()?.Id == Model.StoreId);
 
@@ -42,9 +44,9 @@
         color: #5f6a70;
     }
 
-    #ucc td {
-        vertical-align: top;
-    }
+        #ucc td {
+            vertical-align: top;
+        }
 </style>
 <div id="ucc" style="font-family: sans-serif; font-size: 14px; line-height: 18px; color: #5f6a70;">
     <table style="background-color: #f5f5f5; width: 100%;">
@@ -89,14 +91,14 @@
                                             @{
                                                 var billingParts = new[]
                                                 {
-                                                    $"{Model.CustomerInfo.FirstName} {Model.CustomerInfo.LastName}".Trim(),
-                                                    Model.Properties["billingAddressLine1"],
-                                                    Model.Properties["billingAddressLine2"],
-                                                    Model.Properties["billingCity"],
-                                                    Model.Properties["billingZipCode"],
-                                                    paymentCountry.Name,
-                                                    paymentRegion != null ? paymentRegion.Name : null
-                                                };
+                                            $"{Model.CustomerInfo.FirstName} {Model.CustomerInfo.LastName}".Trim(),
+                                            Model.Properties["billingAddressLine1"],
+                                            Model.Properties["billingAddressLine2"],
+                                            Model.Properties["billingCity"],
+                                            Model.Properties["billingZipCode"],
+                                            paymentCountry?.Name,
+                                            paymentRegion != null ? paymentRegion.Name : null
+                                            };
                                                 @Html.Raw(string.Join("<br />", billingParts.Where(x => !string.IsNullOrWhiteSpace(x))))
                                             }
                                         </p>
@@ -113,14 +115,14 @@
                                                 @{
                                                     var shippingParts = new[]
                                                     {
-                                                        $"{Model.Properties["shippingFirstName"]} {Model.Properties["shippingLastName"]}".Trim(),
-                                                        Model.Properties["shippingAddressLine1"],
-                                                        Model.Properties["shippingAddressLine2"],
-                                                        Model.Properties["shippingCity"],
-                                                        Model.Properties["shippingZipCode"],
-                                                        shippingCountry?.Name,
-                                                        shippingRegion != null ? shippingRegion.Name : null
-                                                    };
+                                            $"{Model.Properties["shippingFirstName"]} {Model.Properties["shippingLastName"]}".Trim(),
+                                            Model.Properties["shippingAddressLine1"],
+                                            Model.Properties["shippingAddressLine2"],
+                                            Model.Properties["shippingCity"],
+                                            Model.Properties["shippingZipCode"],
+                                            shippingCountry?.Name,
+                                            shippingRegion != null ? shippingRegion.Name : null
+                                            };
                                                     @Html.Raw(string.Join("<br />", shippingParts.Where(x => !string.IsNullOrWhiteSpace(x))))
                                                 }
                                             </p>
@@ -158,22 +160,22 @@
                                             @orderLine.Name<br /><span style="color:#a0aec0; font-size: 12px;">@orderLine.Sku</span>
                                         </td>
                                         <td style="vertical-align: top;padding-top:20px; text-align: right;">
-                                            @orderLine.UnitPrice.Value.Formatted().WithoutTax
+                                            @await orderLine.UnitPrice.Value.FormattedAsync(x => x.WithoutTax)
                                             @if (orderLine.UnitPrice.Value != orderLine.UnitPrice.WithoutAdjustments)
                                             {
                                                 <br />
-                                                <span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@orderLine.UnitPrice.WithoutAdjustments.Formatted().WithoutTax</span>
+                                                <span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@await orderLine.UnitPrice.WithoutAdjustments.FormattedAsync(x => x.WithoutTax)</span>
                                             }
                                         </td>
                                         <td style="vertical-align: top;padding-top:20px; text-align: right;">
                                             @((int)orderLine.Quantity)
                                         </td>
                                         <td style="vertical-align: top;padding-top:20px; text-align: right;">
-                                            @orderLine.TotalPrice.Value.Formatted().WithoutTax
+                                            @await orderLine.TotalPrice.Value.FormattedAsync(x => x.WithoutTax)
                                             @if (orderLine.TotalPrice.Value != orderLine.TotalPrice.WithoutAdjustments)
                                             {
                                                 <br />
-                                                <span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@orderLine.TotalPrice.WithoutAdjustments.Formatted().WithoutTax</span>
+                                                <span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@await orderLine.TotalPrice.WithoutAdjustments.FormattedAsync(x => x.WithoutTax)</span>
                                             }
                                         </td>
                                     </tr>
@@ -185,7 +187,7 @@
                                     <td style="vertical-align: top;"><strong>Subtotal</strong></td>
                                     <td style="vertical-align: top; text-align: right; white-space: nowrap;">
                                         <strong>
-                                            @Model.SubtotalPrice.WithPreviousAdjustments.Formatted().WithoutTax
+                                            @await Model.SubtotalPrice.WithPreviousAdjustments.FormattedAsync(x => x.WithoutTax)
                                         </strong>
                                     </td>
                                 </tr>
@@ -199,7 +201,7 @@
                                                 Subtotal Fees
                                             </td>
                                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">
-                                                @subtotalFeesAdjustment.Formatted().WithoutTax
+                                                @await subtotalFeesAdjustment.FormattedAsync(x => x.WithoutTax)
                                             </td>
                                         </tr>
                                     }
@@ -212,7 +214,7 @@
                                                 Subtotal Discount
                                             </td>
                                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">
-                                                @subtotalDiscountAdjustment.Formatted().WithoutTax
+                                                @await subtotalDiscountAdjustment.FormattedAsync(x => x.WithoutTax)
                                             </td>
                                         </tr>
                                     }
@@ -227,9 +229,9 @@
                                         <td style="vertical-align: top; text-align: right; white-space: nowrap;">
                                             @if (Model.ShippingInfo.TotalPrice.WithoutAdjustments.WithoutTax != Model.ShippingInfo.TotalPrice.Value.WithoutTax)
                                             {
-                                                <text><span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@Model.ShippingInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax</span> </text>
+                                                <text><span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@await Model.ShippingInfo.TotalPrice.WithoutAdjustments.FormattedAsync(x => x.WithoutTax)</span> </text>
                                             }
-                                            @Model.ShippingInfo.TotalPrice.Value.Formatted().WithoutTax
+                                            @await Model.ShippingInfo.TotalPrice.Value.FormattedAsync(x => x.WithoutTax))
                                         </td>
                                     </tr>
                                 }
@@ -243,9 +245,9 @@
                                         <td style="vertical-align: top; text-align: right; white-space: nowrap;">
                                             @if (Model.PaymentInfo.TotalPrice.WithoutAdjustments.WithoutTax != Model.PaymentInfo.TotalPrice.Value.WithoutTax)
                                             {
-                                                <text><span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@Model.PaymentInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax</span> </text>
+                                                <text><span style="color:#a0aec0; font-size: 12px; text-decoration:line-through;">@await Model.PaymentInfo.TotalPrice.WithoutAdjustments.FormattedAsync(x => x.WithoutTax)</span> </text>
                                             }
-                                            @Model.PaymentInfo.TotalPrice.Value.Formatted().WithoutTax
+                                            @await Model.PaymentInfo.TotalPrice.Value.FormattedAsync(x => x.WithoutTax)
                                         </td>
                                     </tr>
                                 }
@@ -254,7 +256,7 @@
                                     <td style="vertical-align: top; padding-top: 20px;"><strong>Net Total</strong></td>
                                     <td style="vertical-align: top; padding-top: 20px; text-align: right; white-space: nowrap;">
                                         <strong>
-                                            @Model.TotalPrice.WithPreviousAdjustments.Formatted().WithoutTax
+                                            @await Model.TotalPrice.WithPreviousAdjustments.FormattedAsync(x => x.WithoutTax)
                                         </strong>
                                     </td>
                                 </tr>
@@ -267,7 +269,7 @@
                                                 Net Total Fees
                                             </td>
                                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">
-                                                @totalFeesAdjustment.Formatted().WithoutTax
+                                                @await totalFeesAdjustment.FormattedAsync(x => x.WithoutTax)
                                             </td>
                                         </tr>
                                     }
@@ -280,7 +282,7 @@
                                                 Net Total Discount
                                             </td>
                                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">
-                                                @totalDiscountAdjustment.Formatted().WithoutTax
+                                                @await totalDiscountAdjustment.FormattedAsync(x => x.WithoutTax)
                                             </td>
                                         </tr>
                                     }
@@ -290,7 +292,7 @@
                                         TAX
                                     </td>
                                     <td style="vertical-align: top; text-align: right; white-space: nowrap;">
-                                        @Model.TotalPrice.Value.Formatted().Tax
+                                        @await Model.TotalPrice.Value.FormattedAsync(x => x.Tax)
                                     </td>
                                 </tr>
                                 @{
@@ -300,10 +302,10 @@
                                         <tr>
                                             <td style="vertical-align: top;">
                                                 Gift Card<br />
-                                                <style class="color:#a0aec0; font-size: 12px;">@(string.Join(", ", Model.GiftCards.Select(x => x.Code)))</style>
+                                                <style class="color:#a0aec0; font-size: 12px;">@string.Join(", ", Model.GiftCards.Select(x => x.Code))</style>
                                             </td>
                                             <td style="vertical-align: top; text-align: right; white-space: nowrap;">
-                                                @(totalGiftCardAdjustment.Formatted())
+                                                @(await totalGiftCardAdjustment.FormattedAsync())
                                             </td>
                                         </tr>
                                     }
@@ -315,7 +317,7 @@
                                             Transaction fee
                                         </td>
                                         <td style="vertical-align: top; text-align: right; white-space: nowrap;">
-                                            @Model.TransactionInfo.TransactionFee.Formatted()
+                                            @await Model.TransactionInfo.TransactionFee.FormattedAsync()
                                         </td>
                                     </tr>
                                 }
@@ -325,7 +327,7 @@
                                     </td>
                                     <td style="vertical-align: top; padding-top: 20px; text-align: right; white-space: nowrap;">
                                         <strong style="color: #@(uccThemeColor);">
-                                            @Model.TotalPrice.Value.Formatted()
+                                            @await Model.TotalPrice.Value.FormattedAsync()
                                         </strong>
                                     </td>
                                 </tr>

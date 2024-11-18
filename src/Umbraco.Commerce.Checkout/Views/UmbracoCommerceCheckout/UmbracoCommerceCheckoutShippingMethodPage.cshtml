@@ -3,8 +3,12 @@
     Layout = "UmbracoCommerceCheckoutLayout.cshtml";
 
     var store = Model.GetStore();
+    if (store == null)
+    {
+        throw new InvalidOperationException("Unable to get the current store. Please check your configuration");
+    }
 
-    var currentOrder = UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id);
+    var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id);
 
     var shippingCountryId = currentOrder.ShippingInfo.CountryId.HasValue
         ? currentOrder.ShippingInfo.CountryId
@@ -15,14 +19,14 @@
         : currentOrder.PaymentInfo.RegionId;
 
     var shippingCountry = shippingCountryId.HasValue
-        ? UmbracoCommerceApi.Instance.GetCountry(shippingCountryId.Value)
+        ? await UmbracoCommerceApi.Instance.GetCountryAsync(shippingCountryId.Value)
         : null;
 
     var shippingRegion = shippingRegionId.HasValue
-        ? UmbracoCommerceApi.Instance.GetCountry(shippingRegionId.Value)
+        ? await UmbracoCommerceApi.Instance.GetCountryAsync(shippingRegionId.Value)
         : null;
 
-    var shippingMethods = UmbracoCommerceApi.Instance.GetShippingMethodsAllowedIn(shippingCountryId.Value, shippingRegionId);
+    var shippingMethods = await UmbracoCommerceApi.Instance.GetShippingMethodsAllowedInAsync(shippingCountryId.Value, shippingRegionId);
 
     var currentShippingMethodId = currentOrder.ShippingInfo.ShippingMethodId.HasValue
         ? currentOrder.ShippingInfo.ShippingMethodId.Value
@@ -48,7 +52,7 @@
     <ul class="border border-gray-300 rounded">
         @foreach (var item in shippingMethods.Select((sm, i) => new { ShippingMethod = sm, Index = i }))
         {
-            var rates = item.ShippingMethod.TryCalculateRates(currentOrder);
+            var rates = await item.ShippingMethod.TryCalculateRatesAsync(currentOrder);
             if (rates.Success)
             {
                 foreach (var rate in rates.Result)
@@ -78,9 +82,9 @@
                     <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">
                         <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-50">
                             <input name="shippingMethod" type="radio" value="@item.ShippingMethod.Id"
-                                data-option-id="@rate.Option?.Id"
-                                class="mr-3" required 
-                                @Html.Raw(isSelected ? " checked=\"checked\"" : "") />
+                                   data-option-id="@rate.Option?.Id"
+                                   class="mr-3" required
+                            @Html.Raw(isSelected ? " checked=\"checked\"" : "") />
                             <span class="font-medium">
                                 @(item.ShippingMethod.Name)
                                 @if (rate.Option != null)
@@ -88,7 +92,7 @@
                                     <text> - @rate.Option.Name</text>
                                 }
                             </span>
-                            <span class="flex-1 text-right">@(rate.Value?.Formatted())</span>
+                            <span class="flex-1 text-right">@(rate.Value == null ? string.Empty : await rate.Value.FormattedAsync())</span>
                         </label>
                     </li>
                 }
@@ -97,6 +101,6 @@
     </ul>
 
     <input type="hidden" name="shippingOptionId" value="@(currentShippinOptionId)" />
-    
+
     @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

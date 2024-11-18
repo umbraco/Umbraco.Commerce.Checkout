@@ -4,42 +4,41 @@ using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Common.Pipelines.Tasks;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
+using Umbraco.Commerce.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask : AsyncPipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask : PipelineTaskBase<InstallPipelineContext>
     {
         private readonly IUmbracoCommerceApi _commerceApi;
 
-        public CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask(IUmbracoCommerceApi commerceApi)
-        {
-            _commerceApi = commerceApi;
-        }
+        public CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask(IUmbracoCommerceApi commerceApi) => _commerceApi = commerceApi;
 
-        public override Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
         {
-            _commerceApi.Uow.Execute(uow =>
-            {
-                if (!_commerceApi.PaymentMethodExists(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
+            await _commerceApi.Uow.ExecuteAsync(
+                async uow =>
                 {
-                    var paymentMethod = PaymentMethod.Create(uow, args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue, "[Umbraco Commerce Checkout] Zero Value", "zeroValue");
+                    if (!await _commerceApi.PaymentMethodExistsAsync(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
+                    {
+                        PaymentMethod paymentMethod = await PaymentMethod.CreateAsync(uow, args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue, "[Umbraco Commerce Checkout] Zero Value", "zeroValue");
 
-                    paymentMethod.SetSku("UCCZV01")
-                        .SetTaxClass(args.Model.Store.DefaultTaxClassId!.Value)
-                        .AllowInCountry(args.Model.Store.DefaultCountryId!.Value);
+                        _ = await paymentMethod.SetSkuAsync("UCCZV01")
+                            .SetTaxClassAsync(args.Model.Store.DefaultTaxClassId!.Value)
+                            .AllowInCountryAsync(args.Model.Store.DefaultCountryId!.Value);
 
-                    // We need to set the Continue URL to the checkout confirmation page
-                    // but we create nodes as unpublished, thus without a URL so we'll
-                    // have to listen for the confirmation page being published and
-                    // sync it's URL accordingly
+                        // We need to set the Continue URL to the checkout confirmation page
+                        // but we create nodes as unpublished, thus without a URL so we'll
+                        // have to listen for the confirmation page being published and
+                        // sync it's URL accordingly
+                        await _commerceApi.SavePaymentMethodAsync(paymentMethod);
+                    }
 
-                    _commerceApi.SavePaymentMethod(paymentMethod);
-                }
+                    uow.Complete();
+                },
+                cancellationToken);
 
-                uow.Complete();
-            });
-
-            return Task.FromResult(Ok());
+            return Ok();
         }
     }
 }

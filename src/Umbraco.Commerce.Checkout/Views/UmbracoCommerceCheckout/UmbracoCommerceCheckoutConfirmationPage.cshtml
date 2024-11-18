@@ -1,13 +1,13 @@
 @inherits UmbracoViewPage
 @{
     Layout = "UmbracoCommerceCheckoutLayout.cshtml";
-    
+
     ViewData["finalized"] = true;
     ViewData["canGoBack"] = false;
 
     var store = Model.GetStore();
 
-    var currentOrder = UmbracoCommerceApi.Instance.GetCurrentFinalizedOrder(store.Id);
+    var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentFinalizedOrderAsync(store.Id);
 
     var themeColor = Model.GetThemeColor();
 }

@@ -1,5 +1,6 @@
 using System.Linq;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Commerce.Checkout.Exceptions;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Extensions;
 
@@ -7,9 +8,9 @@ namespace Umbraco.Commerce.Checkout.Web
 {
     public static class PublishedContentExtensions
     {
-        public static StoreReadOnly? GetStore(this IPublishedContent content)
+        public static StoreReadOnly GetStore(this IPublishedContent content)
         {
-            return content.Value<StoreReadOnly>(Cms.Constants.Properties.StorePropertyAlias, fallback: Fallback.ToAncestors);
+            return content.Value<StoreReadOnly>(Cms.Constants.Properties.StorePropertyAlias, fallback: Fallback.ToAncestors) ?? throw new StoreDataNotFoundException();
         }
 
         public static IPublishedContent GetCheckoutPage(this IPublishedContent content)
@@ -39,19 +40,25 @@ namespace Umbraco.Commerce.Checkout.Web
             return content.Parent.Children.TakeWhile(x => !x.Id.Equals(content.Id)).LastOrDefault();
         }
 
-        public static IPublishedContent GetPreviousStepPage(this IPublishedContent content)
+        public static IPublishedContent? GetPreviousStepPage(this IPublishedContent content)
         {
-            var prevPage = GetPreviousPage(content);
+            IPublishedContent prevPage = GetPreviousPage(content);
             if (prevPage == null)
+            {
                 return null;
+            }
 
-            var stepType = prevPage.Value<string>("uccStepType");
-            if (stepType == null || stepType != "ShippingMethod")
+            string? stepType = prevPage.Value<string>("uccStepType");
+            if (stepType is null or not "ShippingMethod")
+            {
                 return prevPage;
+            }
 
-            var checkoutPage = GetCheckoutPage(content);
+            IPublishedContent checkoutPage = GetCheckoutPage(content);
             if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
+            {
                 return prevPage;
+            }
 
             return GetPreviousStepPage(prevPage);
         }
@@ -60,19 +67,26 @@ namespace Umbraco.Commerce.Checkout.Web
         {
             return content.Parent.Children.SkipWhile(x => !x.Id.Equals(content.Id)).Skip(1).FirstOrDefault();
         }
-        public static IPublishedContent GetNextStepPage(this IPublishedContent content)
+
+        public static IPublishedContent? GetNextStepPage(this IPublishedContent content)
         {
-            var nextPage = GetNextPage(content);
+            IPublishedContent nextPage = GetNextPage(content);
             if (nextPage == null)
+            {
                 return null;
+            }
 
-            var stepType = nextPage.Value<string>("uccStepType");
-            if (stepType == null || stepType != "ShippingMethod")
+            string? stepType = nextPage.Value<string>("uccStepType");
+            if (stepType is null or not "ShippingMethod")
+            {
                 return nextPage;
+            }
 
-            var checkoutPage = GetCheckoutPage(content);
+            IPublishedContent checkoutPage = GetCheckoutPage(content);
             if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
+            {
                 return nextPage;
+            }
 
             return GetNextStepPage(nextPage);
         }

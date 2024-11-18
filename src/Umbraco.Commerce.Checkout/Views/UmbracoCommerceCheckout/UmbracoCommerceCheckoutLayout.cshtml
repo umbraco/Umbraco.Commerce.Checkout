@@ -1,18 +1,18 @@
 @inherits UmbracoViewPage
 @{
     Layout = null;
-    
+
     var finalized = (bool)(ViewData["finalized"] ?? false);
     var canGoBack = (bool)(ViewData["canGoBack"] ?? true);
 
     var store = Model.GetStore();
 
     var currentOrder = !finalized
-        ? UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id)
-        : UmbracoCommerceApi.Instance.GetCurrentFinalizedOrder(store.Id);
+        ? await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id)
+        : await UmbracoCommerceApi.Instance.GetCurrentFinalizedOrderAsync(store.Id);
 
     var currentPaymentMethod = currentOrder.PaymentInfo.PaymentMethodId.HasValue
-        ? UmbracoCommerceApi.Instance.GetPaymentMethod(currentOrder.PaymentInfo.PaymentMethodId.Value)
+        ? await UmbracoCommerceApi.Instance.GetPaymentMethodAsync(currentOrder.PaymentInfo.PaymentMethodId.Value)
         : null;
 
     var checkoutPage = Model.GetCheckoutPage();
@@ -52,13 +52,13 @@
                 }
             </div>
 
-            <a id="order-summary-toggle" href="#" class="flex items-center justify-between border-t border-b border-gray-300 bg-gray-50 lg:hidden"> 
+            <a id="order-summary-toggle" href="#" class="flex items-center justify-between border-t border-b border-gray-300 bg-gray-50 lg:hidden">
                 <span class="py-4 pl-8 pr-2 text-lg">
                     <span id="order-summary-toggle__text-closed" class="flex items-center"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.ShowSummary", "Show Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-down" /></svg></span>
                     <span id="order-summary-toggle__text-open" class="flex items-center hidden"><svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current mr-2"><use href="#ico-cart" /></svg> @Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.HideSummary", "Hide Order Summary") <svg viewBox="0 0 20 20" class="inline-block w-5 h-5 fill-current ml-1"><use href="#ico-chevron-up" /></svg></span>
                 </span>
                 <span class="py-4 pr-8 pl-2 text-lg font-medium">
-                    @currentOrder.TransactionAmount.Value.Formatted()
+                    @await currentOrder.TransactionAmount.Value.FormattedAsync()
                 </span>
             </a>
 
@@ -74,7 +74,7 @@
                                     <div><span class="font-medium">@(orderLine.Name) x @((int)orderLine.Quantity)</span><br /><span class="text-xs text-gray-500">@(orderLine.Sku)</span></div>
                                 </div>
 
-                                <div class="pl-4 font-medium">@(orderLine.TotalPrice.Value.Formatted().WithoutTax)</div>
+                                <div class="pl-4 font-medium">@await orderLine.TotalPrice.Value.FormattedAsync(x => x.WithoutTax)</div>
 
                             </div>
                         </li>
@@ -85,14 +85,14 @@
 
                 <div class="flex w-full justify-between items-center">
                     <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Subtotal", "Subtotal")</div>
-                    <div class="font-medium">@(currentOrder.SubtotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
+                    <div class="font-medium">@await currentOrder.SubtotalPrice.WithoutAdjustments.FormattedAsync(x => x.WithoutTax)</div>
                 </div>
 
                 @if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
                 {
                     var currentShippingMethod = currentOrder.ShippingInfo.ShippingMethodId.HasValue
-                        ? UmbracoCommerceApi.Instance.GetShippingMethod(currentOrder.ShippingInfo.ShippingMethodId.Value)
-                        : null;
+                    ? await UmbracoCommerceApi.Instance.GetShippingMethodAsync(currentOrder.ShippingInfo.ShippingMethodId.Value)
+                    : null;
 
                     if (currentShippingMethod != null)
                     {
@@ -100,7 +100,7 @@
                             <div class="">
                                 @string.Format(Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.ShippingVia", "Shipping via {0}"), currentShippingMethod.Name)
                             </div>
-                            <div class="font-medium">@(currentOrder.ShippingInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
+                            <div class="font-medium">@await currentOrder.ShippingInfo.TotalPrice.WithoutAdjustments.FormattedAsync(x => x.WithoutTax)</div>
                         </div>
                     }
                 }
@@ -111,7 +111,7 @@
                         <div class="">
                             @string.Format(Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.PaymentVia", "Payment via {0}"), currentPaymentMethod.Name)
                         </div>
-                        <div class="font-medium">@(currentOrder.PaymentInfo.TotalPrice.WithoutAdjustments.Formatted().WithoutTax)</div>
+                        <div class="font-medium">@await currentOrder.PaymentInfo.TotalPrice.WithoutAdjustments.FormattedAsync(x => x.WithoutTax)</div>
                     </div>
                 }
 
@@ -121,21 +121,21 @@
                     {
                         <div class="flex w-full justify-between items-center mt-2 ">
                             <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Discounts", "Discounts")</div>
-                            <div class="font-medium">@totalDiscounts.Formatted().WithoutTax</div>
+                            <div class="font-medium">@await totalDiscounts.FormattedAsync(x => x.WithoutTax)</div>
                         </div>
                     }
                 }
 
                 <div class="flex w-full justify-between items-center mt-2">
                     <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Tax", "Tax")</div>
-                    <div class="font-medium">@(currentOrder.TotalPrice.Value.Formatted().Tax)</div>
+                    <div class="font-medium">@(currentOrder.TotalPrice.Value.FormattedAsync(x => x.Tax))</div>
                 </div>
 
                 @foreach (var giftCardAdjustment in currentOrder.TransactionAmount.Adjustments.OfType<GiftCardAdjustment>())
                 {
                     <div class="flex w-full justify-between items-center mt-2">
                         <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.GiftCard", "Gift Card") (@(giftCardAdjustment.GiftCardCode))</div>
-                        <div class="font-medium">-@(giftCardAdjustment.Amount.Formatted())</div>
+                        <div class="font-medium">-@(await giftCardAdjustment.Amount.FormattedAsync())</div>
                     </div>
                 }
 
@@ -143,7 +143,7 @@
 
                 <div class="flex w-full justify-between items-center">
                     <div class="font-medium text-base">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Total", "Total")</div>
-                    <div class="font-medium text-2xl">@currentOrder.TransactionAmount.Value.Formatted()</div>
+                    <div class="font-medium text-2xl">@await currentOrder.TransactionAmount.Value.FormattedAsync()</div>
                 </div>
 
             </div>
@@ -169,8 +169,8 @@
                             @{
                                 var passedStep = false;
                                 foreach (var item in checkoutPage.Children
-                                    .Where(x => checkoutPage.Value<bool>("uccCollectShippingInfo") || x.Value<string>("uccStepType") != "ShippingMethod")
-                                    .Select((s, i) => new { Step = s, Index = i }))
+                                .Where(x => checkoutPage.Value<bool>("uccCollectShippingInfo") || x.Value<string>("uccStepType") != "ShippingMethod")
+                                .Select((s, i) => new { Step = s, Index = i }))
                                 {
                                     <li class="@(item.Index > 0 ? "pl-2" : "") flex items-baseline">
                                         @if (item.Index > 0)
@@ -209,7 +209,7 @@
             <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
         </symbol>
         <symbol id="ico-check" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
         </symbol>
         <symbol id="ico-delete" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />

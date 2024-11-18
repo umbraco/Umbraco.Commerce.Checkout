@@ -11,7 +11,7 @@ using Umbraco.Commerce.Common.Pipelines.Tasks;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutNodesTask : AsyncPipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutNodesTask : PipelineTaskBase<InstallPipelineContext>
     {
         private readonly IScopeProvider _scopeProvider;
         private readonly IContentTypeService _contentTypeService;
@@ -57,7 +57,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     CreateCheckoutStepPage(checkoutNode, "Order Confirmation", "Confirmation", "Confirmation");
                 }
 
-                scope.Complete();
+                _ = scope.Complete();
             }
 
             // Continue the pipeline
@@ -74,7 +74,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             checkoutStepNode.SetValue("uccShortStepName", shortName);
             checkoutStepNode.SetValue("uccStepType", $"[\"{stepType}\"]");
 
-            _contentService.Save(checkoutStepNode);
+            _ = _contentService.Save(checkoutStepNode);
         }
     }
 }

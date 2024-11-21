@@ -15,13 +15,13 @@ using Umbraco.Extensions;
 namespace Umbraco.Commerce.Checkout.Web.Controllers
 {
     [NoStoreCacheControl]
-    public abstract class UmbracoCommerceCheckoutBaseController : RenderController
+    public abstract class UmbracoCommerceCheckoutBaseController : UmbracoPageController, IRenderController
     {
         protected UmbracoCommerceCheckoutBaseController(
             ILogger<UmbracoCommerceCheckoutBaseController> logger,
             ICompositeViewEngine compositeViewEngine,
             IUmbracoContextAccessor umbracoContextAccessor)
-            : base(logger, compositeViewEngine, umbracoContextAccessor)
+            : base(logger, compositeViewEngine)
         { }
 
         /// <summary>
@@ -37,11 +37,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             }
         }
 
-        /// <summary>
-        /// Copied from https://github.com/umbraco/Umbraco-CMS/blob/a8705bef785d576d470900464b154b4fbe8a0bc0/src/Umbraco.Web.Common/Controllers/RenderController.cs#L50
-        /// The default action to render the front-end view.
-        /// </summary>
-        public new virtual Task<IActionResult> Index()
+        public virtual Task<IActionResult> Index()
             => Task.FromResult(CurrentTemplate(new ContentModel(CurrentPage)));
 
         protected async Task<bool> IsValidCartAsync()

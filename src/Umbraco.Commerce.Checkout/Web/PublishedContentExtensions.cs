@@ -8,6 +8,12 @@ namespace Umbraco.Commerce.Checkout.Web
 {
     public static class PublishedContentExtensions
     {
+        // Temporary fix for AncestorOrSelf until https://github.com/umbraco/Umbraco-CMS/pull/17581 is merged in
+        private static IPublishedContent? AncestorOrSelf2(this IPublishedContent content, string contentTypeAlias) =>
+            content.ContentType.Alias == contentTypeAlias
+                ? content
+                : content.Ancestor(contentTypeAlias);
+
         public static StoreReadOnly GetStore(this IPublishedContent content)
         {
             return content.Value<StoreReadOnly>(Cms.Constants.Properties.StorePropertyAlias, fallback: Fallback.ToAncestors) ?? throw new StoreDataNotFoundException();
@@ -15,7 +21,7 @@ namespace Umbraco.Commerce.Checkout.Web
 
         public static IPublishedContent GetCheckoutPage(this IPublishedContent content)
         {
-            return content.AncestorOrSelf(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage);
+            return content.AncestorOrSelf2(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage)!;
         }
 
         public static IPublishedContent GetCheckoutBackPage(this IPublishedContent content)

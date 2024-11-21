@@ -102,5 +102,5 @@
 
     <input type="hidden" name="shippingOptionId" value="@(currentShippinOptionId)" />
 
-    @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
+    @await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

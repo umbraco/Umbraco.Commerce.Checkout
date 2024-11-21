@@ -62,5 +62,5 @@
         <div class="border border-gray-300 rounded py-4 px-4 text-center">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.PaymentMethod.NothingToPay", "It looks like today is your lucky day, there is nothing for you to pay 🎉")</div>
     }
 
-    @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
+    @await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

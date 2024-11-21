@@ -19,4 +19,4 @@
     <p><a href="/" class="inline-block bg-@(themeColor) text-white px-4 py-4 rounded hover:bg-gray-900">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Confirmation.ReturnToStore", "Return to store")</a></p>
 </div>
 
-@Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutOrderInfo.cshtml", currentOrder)
+@await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutOrderInfo.cshtml", currentOrder)

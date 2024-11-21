@@ -30,7 +30,7 @@
     <meta name="keywords" content="" />
     <meta name="robots" content="noindex, nofollow" />
     <link href="/App_Plugins/UmbracoCommerceCheckout/uccheckout.surface.css" rel="stylesheet">
-    @RenderSection("head", false)
+    @await RenderSectionAsync("head", false)
 </head>
 <body>
     <div class="relative text-sm">
@@ -81,7 +81,7 @@
                     }
                 </ul>
 
-                @RenderSection("aside", false)
+                @await RenderSectionAsync("aside", false)
 
                 <div class="flex w-full justify-between items-center">
                     <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Subtotal", "Subtotal")</div>
@@ -128,7 +128,7 @@
 
                 <div class="flex w-full justify-between items-center mt-2">
                     <div class="">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderSummary.Tax", "Tax")</div>
-                    <div class="font-medium">@(currentOrder.TotalPrice.Value.FormattedAsync(x => x.Tax))</div>
+                    <div class="font-medium">@(await currentOrder.TotalPrice.Value.FormattedAsync(x => x.Tax))</div>
                 </div>
 
                 @foreach (var giftCardAdjustment in currentOrder.TransactionAmount.Adjustments.OfType<GiftCardAdjustment>())
@@ -230,7 +230,7 @@
 
     <script src="/App_Plugins/UmbracoCommerceCheckout/uccheckout.surface.js" defer async></script>
 
-    @RenderSection("foot", false)
+    @await RenderSectionAsync("foot", false)
 
-</body>
+    </body>
 </html>

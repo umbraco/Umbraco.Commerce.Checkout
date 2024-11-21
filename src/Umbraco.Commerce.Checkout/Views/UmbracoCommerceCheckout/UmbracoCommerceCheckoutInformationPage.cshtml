@@ -142,5 +142,5 @@
     <h3 class="text-xl font-medium mb-4 mt-8">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Comments", "Comments")</h3>
     <textarea name="comments" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.EnterComments", "Enter comments here")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full h-32">@(currentOrder.Properties["comments"])</textarea>
 
-    @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
+    @await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

@@ -7,7 +7,7 @@
     var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id);
 }
 
-@Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutOrderInfo.cshtml", currentOrder)
+@await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutOrderInfo.cshtml", currentOrder)
 
 @using (await Html.BeginPaymentFormAsync(currentOrder))
 {
@@ -18,5 +18,5 @@
         </label>
     </div>
 
-    @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
+    @await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

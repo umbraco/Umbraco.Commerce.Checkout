@@ -14,7 +14,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
         public CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask(IUmbracoCommerceApi commerceApi) => _commerceApi = commerceApi;
 
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
             await _commerceApi.Uow.ExecuteAsync(
                 async uow =>
@@ -23,7 +23,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     {
                         PaymentMethod paymentMethod = await PaymentMethod.CreateAsync(uow, args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue, "[Umbraco Commerce Checkout] Zero Value", "zeroValue");
 
-                        _ = await paymentMethod.SetSkuAsync("UCCZV01")
+                        await paymentMethod.SetSkuAsync("UCCZV01")
                             .SetTaxClassAsync(args.Model.Store.DefaultTaxClassId!.Value)
                             .AllowInCountryAsync(args.Model.Store.DefaultCountryId!.Value);
 
@@ -31,7 +31,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                         // but we create nodes as unpublished, thus without a URL so we'll
                         // have to listen for the confirmation page being published and
                         // sync it's URL accordingly
-                        await _commerceApi.SavePaymentMethodAsync(paymentMethod);
+                        await _commerceApi.SavePaymentMethodAsync(paymentMethod, cancellationToken);
                     }
 
                     uow.Complete();

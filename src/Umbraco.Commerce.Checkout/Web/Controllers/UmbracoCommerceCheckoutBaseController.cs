@@ -7,7 +7,6 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.Common.Controllers;
-using Umbraco.Commerce.Checkout.Exceptions;
 using Umbraco.Commerce.Checkout.Web.Controllers.Filters;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
@@ -43,9 +42,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
         /// The default action to render the front-end view.
         /// </summary>
         public new virtual Task<IActionResult> Index()
-        {
-            return Task.FromResult(CurrentTemplate(new ContentModel(CurrentPage)));
-        }
+            => Task.FromResult(CurrentTemplate(new ContentModel(CurrentPage)));
 
         protected async Task<bool> IsValidCartAsync()
         {
@@ -66,7 +63,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
 
         private static bool IsConfirmationPageType(IPublishedContent node)
         {
-            if (node == null || node.ContentType == null || !node.HasProperty("uccStepType"))
+            if (!node.HasProperty("uccStepType"))
             {
                 return false;
             }

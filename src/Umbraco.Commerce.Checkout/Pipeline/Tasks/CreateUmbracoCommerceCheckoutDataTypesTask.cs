@@ -34,7 +34,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             _configurationEditorJsonSerializer = configurationEditorJsonSerializer;
         }
 
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
             // Theme Color Picker
             if (_propertyEditors.TryGet(Constants.PropertyEditors.Aliases.ColorPicker, out IDataEditor? colorPickerDataEditor))

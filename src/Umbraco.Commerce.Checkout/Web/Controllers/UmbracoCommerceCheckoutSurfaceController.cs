@@ -294,7 +294,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
 
             return (Request.Query.ContainsKey(headerName) && Request.Query[headerName].ToString().InvariantEquals(headerValue))
                 || (Request.HasFormContentType && Request.Form.ContainsKey(headerName) && Request.Form[headerName].ToString().InvariantEquals(headerValue))
-                || (Request.Headers != null && Request.Headers.ContainsKey(headerName) && Request.Headers[headerName].ToString().InvariantEquals(headerValue));
+                || (Request.Headers.ContainsKey(headerName) && Request.Headers[headerName].ToString().InvariantEquals(headerValue));
         }
 
         private JsonResult JsonGet(object model)

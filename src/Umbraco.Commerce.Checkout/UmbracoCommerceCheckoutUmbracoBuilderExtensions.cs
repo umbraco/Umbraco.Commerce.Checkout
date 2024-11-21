@@ -19,7 +19,7 @@ namespace Umbraco.Commerce.Checkout
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            // If the Umbraco Commerce Checkout InstallService is registred then we assume everything is already registered so we don't do it again.
+            // If the Umbraco Commerce Checkout InstallService is registered then we assume everything is already registered so we don't do it again.
             if (builder.Services.FirstOrDefault(x => x.ServiceType == typeof(InstallService)) != null)
             {
                 return builder;

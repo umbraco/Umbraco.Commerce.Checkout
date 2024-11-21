@@ -15,7 +15,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
         public ConfigureUmbracoCommerceStoreTask(IUmbracoCommerceApi commerceApi) => _commerceApi = commerceApi;
 
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
             await _commerceApi.Uow.ExecuteAsync(
                 async uow =>
@@ -28,7 +28,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                             .AsWritableAsync(uow)
                             .SetTemplateViewAsync("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutOrderConfirmationEmail.cshtml");
 
-                        await _commerceApi.SaveEmailTemplateAsync(orderConfirmationEmail);
+                        await _commerceApi.SaveEmailTemplateAsync(orderConfirmationEmail, cancellationToken);
                     }
 
                     // Update order confirmation email
@@ -39,7 +39,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                             .AsWritableAsync(uow)
                             .SetTemplateViewAsync("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutOrderErrorEmail.cshtml");
 
-                        await _commerceApi.SaveEmailTemplateAsync(orderErrorEmail);
+                        await _commerceApi.SaveEmailTemplateAsync(orderErrorEmail, cancellationToken);
                     }
 
                     // Update gift card email
@@ -50,7 +50,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                             .AsWritableAsync(uow)
                             .SetTemplateViewAsync("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutGiftCardEmail.cshtml");
 
-                        await _commerceApi.SaveEmailTemplateAsync(giftCardEmail);
+                        await _commerceApi.SaveEmailTemplateAsync(giftCardEmail, cancellationToken);
                     }
 
                     uow.Complete();

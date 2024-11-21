@@ -34,7 +34,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             _logger = logger;
         }
 
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Begin CreateUmbracoCommerceCheckoutDocumentTypesTask");
 
@@ -151,7 +151,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
             // Move to the dedicated folder
             _logger.LogInformation("Moving checkout step document types to the correct folder.");
-            _ = _contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
+            _contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Checkout Page
             PropertyType[] checkoutPageProps =
@@ -293,7 +293,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             }
 
             // Move to the dedicated folder
-            _ = _contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
+            _contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Continue the pipeline
             return Ok();

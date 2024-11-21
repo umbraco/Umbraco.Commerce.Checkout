@@ -38,10 +38,10 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             }
 
             // No template so redirect to the first child if one exists
-            // TODO - Dinh: solve obsolete warning
-            if (CurrentPage.Children != null)
+            var children = CurrentPage.Children().ToList();
+            if (children.Count > 0)
             {
-                Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent? firstChild = CurrentPage.Children.FirstOrDefault();
+                Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent? firstChild = children.FirstOrDefault();
                 if (firstChild != null)
                 {
                     return RedirectPermanent(firstChild.Url());

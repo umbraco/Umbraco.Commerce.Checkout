@@ -21,7 +21,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             : base(logger, compositeViewEngine)
         { }
 
-        public new async Task<IActionResult> Index()
+        public override async Task<IActionResult> Index()
         {
             // Check the cart is valid before continuing
             if (!await IsValidCartAsync())

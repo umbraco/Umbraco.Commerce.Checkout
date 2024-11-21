@@ -31,7 +31,7 @@
     var storeNodeRecord = searcher.CreateQuery("content").Field("store", store.Id.ToString()).Execute().First();
     var checkoutPageRecords = searcher.CreateQuery("content").NodeTypeAlias(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage).Execute();
     var checkoutPageRecord = checkoutPageRecords.First(x => x.Values["path"].StartsWith(storeNodeRecord.Values["path"]));
-    var checkoutPage = contentCache.GetById(Guid.Parse(checkoutPageRecord.Values["key"]));
+    var checkoutPage = contentCache.GetById(Guid.Parse(checkoutPageRecord.Values["__Key"]));
 
     var uccStoreLogoUrl = checkoutPage.Value<IPublishedContent>("uccStoreLogo")?.Url();
     var uccStoreTsAndCsUrl = checkoutPage.Value<IPublishedContent>("uccTermsAndConditionsPage")?.Url();

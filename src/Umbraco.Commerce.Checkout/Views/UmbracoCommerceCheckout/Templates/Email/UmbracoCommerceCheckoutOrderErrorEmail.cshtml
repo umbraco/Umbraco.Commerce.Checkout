@@ -1,3 +1,4 @@
+@using Examine
 @using Umbraco.Cms.Core.Services.Navigation
 @inherits UmbracoCommerceRazorTemplateView<OrderReadOnly>
 @{
@@ -6,11 +7,19 @@
 
     // Lookup the umbraco commerce checkout page for the associated orders store
     // so that we can extract relevant settings to configure the email template
+    // var contentCache = this.GetRequiredService<IPublishedContentCache>();
+    // var nav = this.GetRequiredService<IDocumentNavigationQueryService>();
+    // var rootKeys = nav.TryGetRootKeys(out var keys1) ? keys1 : [];
+    // var nodeKeys = rootKeys.SelectMany(key => nav.TryGetDescendantsKeysOfType(key, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage, out var keys2) ? keys2 : []);
+    // var checkoutPage = nodeKeys.Select(x => contentCache.GetById(x)).FirstOrDefault(x => x.GetStore()?.Id == Model.StoreId);
+
     var contentCache = this.GetRequiredService<IPublishedContentCache>();
-    var nav = this.GetRequiredService<IDocumentNavigationQueryService>();
-    var rootKeys = nav.TryGetRootKeys(out var keys1) ? keys1 : [];
-    var nodeKeys = rootKeys.SelectMany(key => nav.TryGetDescendantsKeysOfType(key, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage, out var keys2) ? keys2 : []);
-    var checkoutPage = nodeKeys.Select(x => contentCache.GetById(x)).FirstOrDefault(x => x.GetStore()?.Id == Model.StoreId);
+    var examineManager = this.GetRequiredService<IExamineManager>();
+    var searcher = examineManager.GetIndex("InternalIndex").Searcher;
+    var storeNodeRecord = searcher.CreateQuery("content").Field("store", store.Id.ToString()).Execute().First();
+    var checkoutPageRecords = searcher.CreateQuery("content").NodeTypeAlias(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage).Execute();
+    var checkoutPageRecord = checkoutPageRecords.First(x => x.Values["path"].StartsWith(storeNodeRecord.Values["path"]));
+    var checkoutPage = contentCache.GetById(Guid.Parse(checkoutPageRecord.Values["__Key"]));
 
     var uccStoreLogoUrl = checkoutPage.Value<IPublishedContent>("uccStoreLogo")?.Url();
     var uccStoreTsAndCsUrl = checkoutPage.Value<IPublishedContent>("uccTermsAndConditionsPage")?.Url();

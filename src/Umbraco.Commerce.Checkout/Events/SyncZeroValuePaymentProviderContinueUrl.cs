@@ -21,20 +21,17 @@ namespace Umbraco.Commerce.Checkout.Events
     public class SyncZeroValuePaymentProviderContinueUrl : INotificationAsyncHandler<ContentCacheRefresherNotification>
     {
         private readonly IUmbracoCommerceApi _commerceApi;
-        private readonly INavigationQueryService _navigationQueryService;
-        private readonly IPublishedContentCache _publishedContentCacheService;
-        private readonly IPublishedContentTypeCache _publishedContentTypeCacheService;
+        private readonly IDocumentNavigationQueryService _documentNavigationQueryService;
+        private readonly IPublishedContentCache _publishedContentCache;
 
         public SyncZeroValuePaymentProviderContinueUrl(
             IUmbracoCommerceApi commerceApi,
-            INavigationQueryService navigationQueryService,
-            IPublishedContentCache publishedContentCacheService,
-            IPublishedContentTypeCache publishedContentTypeCacheService)
+            IDocumentNavigationQueryService documentNavigationQueryService,
+            IPublishedContentCache publishedContentCache)
         {
             _commerceApi = commerceApi;
-            _navigationQueryService = navigationQueryService;
-            _publishedContentCacheService = publishedContentCacheService;
-            _publishedContentTypeCacheService = publishedContentTypeCacheService;
+            _documentNavigationQueryService = documentNavigationQueryService;
+            _publishedContentCache = publishedContentCache;
         }
 
         public async Task HandleAsync(ContentCacheRefresherNotification notification, CancellationToken cancellationToken)
@@ -56,7 +53,7 @@ namespace Umbraco.Commerce.Checkout.Events
                 if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshNode))
                 {
                     // Single node refresh
-                    IPublishedContent? node = _publishedContentCacheService.GetById(payload.Id);
+                    IPublishedContent? node = _publishedContentCache.GetById(payload.Id);
                     if (node != null && IsConfirmationPageType(node))
                     {
                         await DoSyncZeroValuePaymentProviderContinueUrlAsync(node);
@@ -65,12 +62,12 @@ namespace Umbraco.Commerce.Checkout.Events
                 else if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshBranch))
                 {
                     // Branch refresh
-                    IPublishedContent? rootNode = _publishedContentCacheService.GetById(payload.Id);
-                    if (rootNode != null && _navigationQueryService.TryGetDescendantsKeysOfType(rootNode.Key, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage, out IEnumerable<Guid> keys))
+                    IPublishedContent? rootNode = _publishedContentCache.GetById(payload.Id);
+                    if (rootNode != null && _documentNavigationQueryService.TryGetDescendantsKeysOfType(rootNode.Key, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage, out IEnumerable<Guid> keys))
                     {
                         foreach (Guid key in keys)
                         {
-                            IPublishedContent? node = _publishedContentCacheService.GetById(key);
+                            IPublishedContent? node = _publishedContentCache.GetById(key);
                             if (node != null && IsConfirmationPageType(node))
                             {
                                 await DoSyncZeroValuePaymentProviderContinueUrlAsync(node);
@@ -80,15 +77,15 @@ namespace Umbraco.Commerce.Checkout.Events
                 }
                 else if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshAll))
                 {
-                    if (_navigationQueryService.TryGetRootKeys(out IEnumerable<Guid> rootKeys))
+                    if (_documentNavigationQueryService.TryGetRootKeys(out IEnumerable<Guid> rootKeys))
                     {
                         foreach (Guid rootKey in rootKeys)
                         {
-                            if (_navigationQueryService.TryGetDescendantsKeysOfType(rootKey, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage, out IEnumerable<Guid> keys))
+                            if (_documentNavigationQueryService.TryGetDescendantsKeysOfType(rootKey, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage, out IEnumerable<Guid> keys))
                             {
                                 foreach (Guid key in keys)
                                 {
-                                    IPublishedContent? node = _publishedContentCacheService.GetById(key);
+                                    IPublishedContent? node = _publishedContentCache.GetById(key);
                                     if (node != null && IsConfirmationPageType(node))
                                     {
                                         await DoSyncZeroValuePaymentProviderContinueUrlAsync(node);

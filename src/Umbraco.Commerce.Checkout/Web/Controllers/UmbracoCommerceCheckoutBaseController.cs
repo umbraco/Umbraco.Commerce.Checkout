@@ -19,8 +19,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
     {
         protected UmbracoCommerceCheckoutBaseController(
             ILogger<UmbracoCommerceCheckoutBaseController> logger,
-            ICompositeViewEngine compositeViewEngine,
-            IUmbracoContextAccessor umbracoContextAccessor)
+            ICompositeViewEngine compositeViewEngine)
             : base(logger, compositeViewEngine)
         { }
 

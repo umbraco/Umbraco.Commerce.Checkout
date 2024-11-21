@@ -2,22 +2,21 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
-using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
 {
     public class UccCheckoutStepPageController : UmbracoCommerceCheckoutCheckoutStepPageController
     {
-        public UccCheckoutStepPageController(ILogger<UmbracoCommerceCheckoutCheckoutStepPageController> logger, ICompositeViewEngine compositeViewEngine, IUmbracoContextAccessor umbracoContextAccessor)
-            : base(logger, compositeViewEngine, umbracoContextAccessor)
+        public UccCheckoutStepPageController(ILogger<UmbracoCommerceCheckoutCheckoutStepPageController> logger, ICompositeViewEngine compositeViewEngine)
+            : base(logger, compositeViewEngine)
         { }
     }
 
     public class UmbracoCommerceCheckoutCheckoutStepPageController : UmbracoCommerceCheckoutBaseController
     {
-        public UmbracoCommerceCheckoutCheckoutStepPageController(ILogger<UmbracoCommerceCheckoutCheckoutStepPageController> logger, ICompositeViewEngine compositeViewEngine, IUmbracoContextAccessor umbracoContextAccessor)
-            : base(logger, compositeViewEngine, umbracoContextAccessor)
+        public UmbracoCommerceCheckoutCheckoutStepPageController(ILogger<UmbracoCommerceCheckoutCheckoutStepPageController> logger, ICompositeViewEngine compositeViewEngine)
+            : base(logger, compositeViewEngine)
         { }
 
         public override async Task<IActionResult> Index()

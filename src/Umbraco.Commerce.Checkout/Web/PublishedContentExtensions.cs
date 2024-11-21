@@ -9,6 +9,7 @@ namespace Umbraco.Commerce.Checkout.Web
     public static class PublishedContentExtensions
     {
         // Temporary fix for AncestorOrSelf until https://github.com/umbraco/Umbraco-CMS/pull/17581 is merged in
+        // Remove in v15 final
         private static IPublishedContent? AncestorOrSelf2(this IPublishedContent content, string contentTypeAlias) =>
             content.ContentType.Alias == contentTypeAlias
                 ? content

@@ -1,4 +1,4 @@
-@using Newtonsoft.Json;
+@using System.Text.Json
 @inherits UmbracoViewPage
 @{
     Layout = "UmbracoCommerceCheckoutLayout.cshtml";
@@ -72,11 +72,11 @@
             @foreach (var country in countries)
             {
                 <option value="@(country.Id)" @Html.Raw(currentOrder.PaymentInfo.CountryId == country.Id ? "selected=\"selected\"" : "")
-                        data-regions="@(JsonConvert.SerializeObject((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
-                {
-                    id = x.Id,
-                    name = x.Name,
-                })))">
+                        data-regions="@(JsonSerializer.Serialize((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
+                        {
+                            id = x.Id,
+                            name = x.Name,
+                        })))">
                     @(country.Name)
                 </option>
             }
@@ -119,11 +119,11 @@
                     @foreach (var country in countries)
                     {
                         <option value="@(country.Id)" @Html.Raw(currentOrder.ShippingInfo.CountryId == country.Id ? "selected=\"selected\"" : "")
-                                data-regions="@(JsonConvert.SerializeObject((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
-                        {
-                            id = x.Id,
-                            name = x.Name,
-                        })))">
+                                data-regions="@(JsonSerializer.Serialize((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
+                                {
+                                    id = x.Id,
+                                    name = x.Name,
+                                })))">
                             @(country.Name)
                         </option>
                     }

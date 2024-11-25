@@ -1,129 +1,100 @@
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Events;
-using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.Notifications;
-using Umbraco.Cms.Core.PublishedCache;
-using Umbraco.Cms.Core.Services.Changes;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Routing;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Sync;
-using Umbraco.Commerce.Checkout.Web;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
 using Umbraco.Commerce.Extensions;
-using Umbraco.Extensions;
+using UmbracoCommerceConstants = Umbraco.Commerce.Cms.Constants;
 
 namespace Umbraco.Commerce.Checkout.Events
 {
-    public class SyncZeroValuePaymentProviderContinueUrl : INotificationAsyncHandler<ContentCacheRefresherNotification>
+    public class SyncZeroValuePaymentProviderContinueUrl(
+        IDocumentNavigationQueryService documentNavigationQueryService,
+        IContentService contentService,
+        IIdKeyMap keyMap,
+        IServerRoleAccessor serverRoleAccessor,
+        IUmbracoCommerceApi commerceApi,
+        IPublishedUrlProvider publishedUrlProvider)
+        : ContentOfTypeCacheRefresherNotificationHandlerBase(documentNavigationQueryService, contentService, keyMap, serverRoleAccessor)
     {
-        private readonly IUmbracoCommerceApi _commerceApi;
-        private readonly IDocumentNavigationQueryService _documentNavigationQueryService;
-        private readonly IPublishedContentCache _publishedContentCache;
+        private readonly IDocumentNavigationQueryService _documentNavigationQueryService = documentNavigationQueryService;
+        private readonly IContentService _contentService = contentService;
 
-        public SyncZeroValuePaymentProviderContinueUrl(
-            IUmbracoCommerceApi commerceApi,
-            IDocumentNavigationQueryService documentNavigationQueryService,
-            IPublishedContentCache publishedContentCache)
+        protected override string ContentTypeAlias => UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage;
+
+        protected override async Task HandleContentOfTypeAsync(IContent content)
         {
-            _commerceApi = commerceApi;
-            _documentNavigationQueryService = documentNavigationQueryService;
-            _publishedContentCache = publishedContentCache;
-        }
-
-        public async Task HandleAsync(ContentCacheRefresherNotification notification, CancellationToken cancellationToken)
-        {
-            ArgumentNullException.ThrowIfNull(notification, nameof(notification));
-
-            if (notification.MessageType != MessageType.RefreshByPayload)
+            if (IsConfirmationPageType(content))
             {
-                throw new NotSupportedException();
-            }
-
-            if (notification.MessageObject is not ContentCacheRefresher.JsonPayload[] payloads)
-            {
-                return;
-            }
-
-            foreach (ContentCacheRefresher.JsonPayload payload in payloads)
-            {
-                if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshNode))
-                {
-                    // Single node refresh
-                    IPublishedContent? node = _publishedContentCache.GetById(payload.Id);
-                    if (node != null && IsConfirmationPageType(node))
-                    {
-                        await DoSyncZeroValuePaymentProviderContinueUrlAsync(node);
-                    }
-                }
-                else if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshBranch))
-                {
-                    // Branch refresh
-                    IPublishedContent? rootNode = _publishedContentCache.GetById(payload.Id);
-                    if (rootNode != null && _documentNavigationQueryService.TryGetDescendantsKeysOfType(rootNode.Key, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage, out IEnumerable<Guid> keys))
-                    {
-                        foreach (Guid key in keys)
-                        {
-                            IPublishedContent? node = _publishedContentCache.GetById(key);
-                            if (node != null && IsConfirmationPageType(node))
-                            {
-                                await DoSyncZeroValuePaymentProviderContinueUrlAsync(node);
-                            }
-                        }
-                    }
-                }
-                else if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshAll))
-                {
-                    if (_documentNavigationQueryService.TryGetRootKeys(out IEnumerable<Guid> rootKeys))
-                    {
-                        foreach (Guid rootKey in rootKeys)
-                        {
-                            if (_documentNavigationQueryService.TryGetDescendantsKeysOfType(rootKey, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage, out IEnumerable<Guid> keys))
-                            {
-                                foreach (Guid key in keys)
-                                {
-                                    IPublishedContent? node = _publishedContentCache.GetById(key);
-                                    if (node != null && IsConfirmationPageType(node))
-                                    {
-                                        await DoSyncZeroValuePaymentProviderContinueUrlAsync(node);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                await DoSyncZeroValuePaymentProviderContinueUrlAsync(content);
             }
         }
 
-        private static bool IsConfirmationPageType(IPublishedContent node)
+        private static bool IsConfirmationPageType(IContent content)
         {
-            if (!node.HasProperty("uccStepType"))
+            if (!content.HasProperty("uccStepType"))
             {
                 return false;
             }
 
-            return node.ContentType.Alias == UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage && node.Value<string>("uccStepType") == "Confirmation";
+            return content.ContentType.Alias == UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage && content.GetValue<string>("uccStepType") == "Confirmation";
         }
 
-        private async Task DoSyncZeroValuePaymentProviderContinueUrlAsync(IPublishedContent confirmationNode)
+        private async Task DoSyncZeroValuePaymentProviderContinueUrlAsync(IContent content)
         {
-            StoreReadOnly store = confirmationNode.GetStore();
-            PaymentMethodReadOnly paymentMethod = await _commerceApi.GetPaymentMethodAsync(store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
+            if (!content.Published)
+            {
+                // Don't do anything if the content is not published
+                return;
+            }
+
+            // Get the store ID from the store picker in the contents ancestors
+            Guid? storeId = null;
+
+            if (content.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
+            {
+                storeId = content.GetValue<Guid>(UmbracoCommerceConstants.Properties.StorePropertyAlias);
+            }
+            else
+            {
+                if (_documentNavigationQueryService.TryGetAncestorsKeys(content.Key, out IEnumerable<Guid> ancestorsKeys))
+                {
+                    foreach (Guid ancestorKey in ancestorsKeys)
+                    {
+                        IContent? content2 = _contentService.GetById(ancestorKey);
+                        if (content2 != null && content2.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
+                        {
+                            storeId = content2.GetValue<Guid>(UmbracoCommerceConstants.Properties.StorePropertyAlias);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!storeId.HasValue)
+            {
+                return;
+            }
+
+            // Get the payment method and set the continue URL
+            PaymentMethodReadOnly paymentMethod = await commerceApi.GetPaymentMethodAsync(storeId.Value, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
 
             if (paymentMethod == null)
             {
                 return;
             }
 
-            await _commerceApi.Uow.ExecuteAsync(async uow =>
+            await commerceApi.Uow.ExecuteAsync(async uow =>
             {
                 PaymentMethod writable = await paymentMethod.AsWritableAsync(uow)
-                    .SetSettingAsync("ContinueUrl", confirmationNode.Url());
+                    .SetSettingAsync("ContinueUrl", publishedUrlProvider.GetUrl(content.Key));
 
-                await _commerceApi.SavePaymentMethodAsync(writable);
+                await commerceApi.SavePaymentMethodAsync(writable);
 
                 uow.Complete();
             });

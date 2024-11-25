@@ -27,6 +27,14 @@ namespace Umbraco.Commerce.Checkout
         };
 #pragma warning restore IDE1006 // Naming Styles
 
+        public static class RelationTypes
+        {
+            public static class Aliases
+            {
+                public const string StoreCheckout = "uccStoreCheckout";
+            }
+        }
+
         public static class DataTypes
         {
             public static class Guids

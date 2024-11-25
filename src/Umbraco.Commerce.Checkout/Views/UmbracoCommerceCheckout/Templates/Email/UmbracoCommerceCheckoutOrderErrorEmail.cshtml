@@ -1,5 +1,4 @@
-@using Examine
-@using Umbraco.Cms.Core.Services.Navigation
+@using Umbraco.Cms.Core.Services
 @inherits UmbracoCommerceRazorTemplateView<OrderReadOnly>
 @{
     // Get order entities
@@ -14,12 +13,15 @@
     // var checkoutPage = nodeKeys.Select(x => contentCache.GetById(x)).FirstOrDefault(x => x.GetStore()?.Id == Model.StoreId);
 
     var contentCache = this.GetRequiredService<IPublishedContentCache>();
-    var examineManager = this.GetRequiredService<IExamineManager>();
-    var searcher = examineManager.GetIndex("InternalIndex").Searcher;
-    var storeNodeRecord = searcher.CreateQuery("content").Field("store", store.Id.ToString()).Execute().First();
-    var checkoutPageRecords = searcher.CreateQuery("content").NodeTypeAlias(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage).Execute();
-    var checkoutPageRecord = checkoutPageRecords.First(x => x.Values["path"].StartsWith(storeNodeRecord.Values["path"]));
-    var checkoutPage = contentCache.GetById(Guid.Parse(checkoutPageRecord.Values["__Key"]));
+    var relationService = this.GetRequiredService<IRelationService>();
+    var storeCheckoutRelations = relationService.GetByRelationTypeAlias(UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout);
+    var storeCheckoutRelation = storeCheckoutRelations.FirstOrDefault(x => contentCache.GetById(x.ParentId)?.GetStore().Id == store.Id);
+    var checkoutPage = storeCheckoutRelation != null ? contentCache.GetById(storeCheckoutRelation.ChildId) : null;
+
+    if (checkoutPage == null)
+    {
+        throw new InvalidOperationException($"No checkout page found for store {store.Name} ({store.Id})");
+    }
 
     var uccStoreLogoUrl = checkoutPage.Value<IPublishedContent>("uccStoreLogo")?.Url();
     var uccStoreTsAndCsUrl = checkoutPage.Value<IPublishedContent>("uccTermsAndConditionsPage")?.Url();

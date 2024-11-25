@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Routing;
@@ -42,7 +44,18 @@ namespace Umbraco.Commerce.Checkout.Events
                 return false;
             }
 
-            return content.ContentType.Alias == UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage && content.GetValue<string>("uccStepType") == "Confirmation";
+            if (content.ContentType.Alias != UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage)
+            {
+                return false;
+            }
+
+            var stepValue = content.GetValue<string>("uccStepType");
+            if (stepValue != null && stepValue.StartsWith('[') && stepValue.EndsWith(']'))
+            {
+                stepValue = JsonSerializer.Deserialize<string[]>(stepValue)?.FirstOrDefault();
+            }
+
+            return stepValue == "Confirmation";
         }
 
         private async Task DoSyncZeroValuePaymentProviderContinueUrlAsync(IContent content)

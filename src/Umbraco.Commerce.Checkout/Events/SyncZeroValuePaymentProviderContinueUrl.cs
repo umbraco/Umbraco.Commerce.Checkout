@@ -105,7 +105,7 @@ namespace Umbraco.Commerce.Checkout.Events
             await commerceApi.Uow.ExecuteAsync(async uow =>
             {
                 PaymentMethod writable = await paymentMethod.AsWritableAsync(uow)
-                    .SetSettingAsync("ContinueUrl", publishedUrlProvider.GetUrl(content.Key));
+                    .SetSettingAsync("continueUrl", publishedUrlProvider.GetUrl(content.Key));
 
                 await commerceApi.SavePaymentMethodAsync(writable);
 

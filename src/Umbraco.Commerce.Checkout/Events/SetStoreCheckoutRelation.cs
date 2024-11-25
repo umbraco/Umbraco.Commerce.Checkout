@@ -56,9 +56,21 @@ public class SetStoreCheckoutRelation(
         {
             IRelationType? relationType = relationService.GetRelationTypeByAlias(UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout);
 
+            if (relationType != null)
+            {
+                relationService.Delete(relationType);
+                relationType = null;
+            }
+
             if (relationType == null)
             {
-                relationType = new RelationType(UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout, "[Umbraco Commerce Checkout] Store Checkout");
+                relationType = new RelationType(
+                    UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout,
+                    "[Umbraco Commerce Checkout] Store Checkout",
+                    true,
+                    Umbraco.Cms.Core.Constants.ObjectTypes.Document,
+                    Umbraco.Cms.Core.Constants.ObjectTypes.Document,
+                    false);
                 relationService.Save(relationType);
             }
 

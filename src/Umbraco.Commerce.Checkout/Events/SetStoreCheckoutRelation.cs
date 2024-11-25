@@ -65,8 +65,8 @@ public class SetStoreCheckoutRelation(
             if (relationType == null)
             {
                 relationType = new RelationType(
-                    UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout,
                     "[Umbraco Commerce Checkout] Store Checkout",
+                    UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout,
                     true,
                     Umbraco.Cms.Core.Constants.ObjectTypes.Document,
                     Umbraco.Cms.Core.Constants.ObjectTypes.Document,

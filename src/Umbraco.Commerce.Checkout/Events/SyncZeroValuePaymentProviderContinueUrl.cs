@@ -10,7 +10,9 @@ using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Sync;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
+using Umbraco.Commerce.Core.PaymentProviders;
 using Umbraco.Commerce.Extensions;
+using Umbraco.Extensions;
 using UmbracoCommerceConstants = Umbraco.Commerce.Cms.Constants;
 
 namespace Umbraco.Commerce.Checkout.Events
@@ -102,15 +104,21 @@ namespace Umbraco.Commerce.Checkout.Events
                 return;
             }
 
-            await commerceApi.Uow.ExecuteAsync(async uow =>
+            IPaymentProvider? paymentProvider = await commerceApi.GetPaymentProviderAsync(paymentMethod.PaymentProviderAlias);
+            PaymentProviderSettingDefinition? setting = paymentProvider?.SettingDefinitions.FirstOrDefault(x => x.Key.InvariantEquals("continueUrl"));
+
+            if (setting != null)
             {
-                PaymentMethod writable = await paymentMethod.AsWritableAsync(uow)
-                    .SetSettingAsync("continueUrl", publishedUrlProvider.GetUrl(content.Key));
+                await commerceApi.Uow.ExecuteAsync(async uow =>
+                {
+                    PaymentMethod writable = await paymentMethod.AsWritableAsync(uow)
+                        .SetSettingAsync(setting.Key, publishedUrlProvider.GetUrl(content.Key));
 
-                await commerceApi.SavePaymentMethodAsync(writable);
+                    await commerceApi.SavePaymentMethodAsync(writable);
 
-                uow.Complete();
-            });
+                    uow.Complete();
+                });
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ using UmbracoCommerceConstants = Umbraco.Commerce.Cms.Constants;
 
 namespace Umbraco.Commerce.Checkout.Events;
 
-public class SetCheckoutStoreRootRelation(
+public class SetStoreCheckoutRelation(
     IDocumentNavigationQueryService documentNavigationQueryService,
     IContentService contentService,
     IIdKeyMap keyMap,

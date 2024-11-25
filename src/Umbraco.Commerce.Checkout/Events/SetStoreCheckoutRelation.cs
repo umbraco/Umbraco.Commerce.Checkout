@@ -26,7 +26,7 @@ public class SetStoreCheckoutRelation(
     {
         if (content.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
         {
-            EnsureStoreCheckoutStoreRelation(content, content);
+            EnsureStoreCheckoutRelation(content, content);
         }
         else
         {
@@ -39,7 +39,7 @@ public class SetStoreCheckoutRelation(
                     {
                         if (content2.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
                         {
-                            EnsureStoreCheckoutStoreRelation(content2, content);
+                            EnsureStoreCheckoutRelation(content2, content);
                             break;
                         }
                     }
@@ -50,7 +50,7 @@ public class SetStoreCheckoutRelation(
         return Task.CompletedTask;
     }
 
-    private void EnsureStoreCheckoutStoreRelation(IContent storeRootPage, IContent checkoutPage)
+    private void EnsureStoreCheckoutRelation(IContent storeRootPage, IContent checkoutPage)
     {
         if (!relationService.AreRelated(checkoutPage.Id, storeRootPage.Id, UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout))
         {
@@ -65,6 +65,7 @@ public class SetStoreCheckoutRelation(
                     Umbraco.Cms.Core.Constants.ObjectTypes.Document,
                     Umbraco.Cms.Core.Constants.ObjectTypes.Document,
                     false);
+
                 relationService.Save(relationType);
             }
 

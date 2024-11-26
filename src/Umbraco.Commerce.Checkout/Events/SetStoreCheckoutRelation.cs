@@ -5,6 +5,7 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Sync;
+using Umbraco.Commerce.Checkout.Helpers;
 using UmbracoCommerceConstants = Umbraco.Commerce.Cms.Constants;
 
 namespace Umbraco.Commerce.Checkout.Events;
@@ -14,7 +15,7 @@ public class SetStoreCheckoutRelation(
     IContentService contentService,
     IIdKeyMap keyMap,
     IServerRoleAccessor serverRoleAccessor,
-    IRelationService relationService)
+    StoreCheckoutRelationHelper relationHelper)
     : ContentOfTypeCacheRefresherNotificationHandlerBase(documentNavigationQueryService, contentService, keyMap, serverRoleAccessor)
 {
     private readonly IDocumentNavigationQueryService _documentNavigationQueryService = documentNavigationQueryService;
@@ -26,7 +27,7 @@ public class SetStoreCheckoutRelation(
     {
         if (content.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
         {
-            EnsureStoreCheckoutRelation(content, content);
+            relationHelper.EnsureStoreCheckoutRelation(content.Id, content.Id);
         }
         else
         {
@@ -39,7 +40,7 @@ public class SetStoreCheckoutRelation(
                     {
                         if (content2.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
                         {
-                            EnsureStoreCheckoutRelation(content2, content);
+                            relationHelper.EnsureStoreCheckoutRelation(content2.Id, content.Id);
                             break;
                         }
                     }
@@ -48,28 +49,5 @@ public class SetStoreCheckoutRelation(
         }
 
         return Task.CompletedTask;
-    }
-
-    private void EnsureStoreCheckoutRelation(IContent storeRootPage, IContent checkoutPage)
-    {
-        if (!relationService.AreRelated(storeRootPage.Id, checkoutPage.Id, UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout))
-        {
-            IRelationType? relationType = relationService.GetRelationTypeByAlias(UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout);
-
-            if (relationType == null)
-            {
-                relationType = new RelationType(
-                    "[Umbraco Commerce Checkout] Store Checkout",
-                    UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout,
-                    true,
-                    Umbraco.Cms.Core.Constants.ObjectTypes.Document,
-                    Umbraco.Cms.Core.Constants.ObjectTypes.Document,
-                    false);
-
-                relationService.Save(relationType);
-            }
-
-            relationService.Save(new Relation(storeRootPage.Id, checkoutPage.Id, relationType));
-        }
     }
 }

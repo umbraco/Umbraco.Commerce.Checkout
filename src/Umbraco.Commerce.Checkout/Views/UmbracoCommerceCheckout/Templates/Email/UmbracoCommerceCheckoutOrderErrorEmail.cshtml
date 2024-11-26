@@ -1,4 +1,4 @@
-@using Umbraco.Cms.Core.Services
+@using Umbraco.Commerce.Checkout.Helpers
 @inherits UmbracoCommerceRazorTemplateView<OrderReadOnly>
 @{
     // Get order entities
@@ -6,18 +6,8 @@
 
     // Lookup the umbraco commerce checkout page for the associated orders store
     // so that we can extract relevant settings to configure the email template
-    // var contentCache = this.GetRequiredService<IPublishedContentCache>();
-    // var nav = this.GetRequiredService<IDocumentNavigationQueryService>();
-    // var rootKeys = nav.TryGetRootKeys(out var keys1) ? keys1 : [];
-    // var nodeKeys = rootKeys.SelectMany(key => nav.TryGetDescendantsKeysOfType(key, UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage, out var keys2) ? keys2 : []);
-    // var checkoutPage = nodeKeys.Select(x => contentCache.GetById(x)).FirstOrDefault(x => x.GetStore()?.Id == Model.StoreId);
-
-    var contentCache = this.GetRequiredService<IPublishedContentCache>();
-    var relationService = this.GetRequiredService<IRelationService>();
-    var storeCheckoutRelations = relationService.GetByRelationTypeAlias(UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout);
-    var storeCheckoutRelation = storeCheckoutRelations.FirstOrDefault(x => contentCache.GetById(x.ParentId)?.GetStore().Id == store.Id);
-    var checkoutPage = storeCheckoutRelation != null ? contentCache.GetById(storeCheckoutRelation.ChildId) : null;
-
+    var checkoutRelationHelper = this.GetRequiredService<StoreCheckoutRelationHelper>();
+    var checkoutPage = checkoutRelationHelper.ResolveCheckoutPageByStoreId(store.Id);
     if (checkoutPage == null)
     {
         throw new InvalidOperationException($"No checkout page found for store {store.Name} ({store.Id})");

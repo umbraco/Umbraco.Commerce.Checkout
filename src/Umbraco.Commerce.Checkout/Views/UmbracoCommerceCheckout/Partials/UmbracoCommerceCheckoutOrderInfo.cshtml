@@ -7,19 +7,19 @@
     var checkoutPage = currentPage.GetCheckoutPage();
 
     var paymentCountryName = order.PaymentInfo.CountryId.HasValue
-        ? UmbracoCommerceApi.Instance.GetCountry(order.PaymentInfo.CountryId.Value).Name
+        ? (await UmbracoCommerceApi.Instance.GetCountryAsync(order.PaymentInfo.CountryId.Value)).Name
         : null;
 
     var paymentRegionName = order.PaymentInfo.RegionId.HasValue
-        ? UmbracoCommerceApi.Instance.GetRegion(order.PaymentInfo.RegionId.Value).Name
+        ? (await UmbracoCommerceApi.Instance.GetRegionAsync(order.PaymentInfo.RegionId.Value)).Name
         : null;
 
     var shippingCountryName = order.ShippingInfo.CountryId.HasValue
-        ? UmbracoCommerceApi.Instance.GetCountry(order.ShippingInfo.CountryId.Value).Name
+        ? (await UmbracoCommerceApi.Instance.GetCountryAsync(order.ShippingInfo.CountryId.Value)).Name
         : null;
 
     var shippingRegionName = order.ShippingInfo.RegionId.HasValue
-        ? UmbracoCommerceApi.Instance.GetRegion(order.ShippingInfo.RegionId.Value).Name
+        ? (await UmbracoCommerceApi.Instance.GetRegionAsync(order.ShippingInfo.RegionId.Value)).Name
         : null;
 }
 <div class="border border-gray-300 p-6 rounded mb-8">

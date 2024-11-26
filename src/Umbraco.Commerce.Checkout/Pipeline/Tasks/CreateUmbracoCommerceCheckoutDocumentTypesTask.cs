@@ -12,7 +12,7 @@ using Umbraco.Commerce.Common.Pipelines.Tasks;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutDocumentTypesTask : AsyncPipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutDocumentTypesTask : PipelineTaskBase<InstallPipelineContext>
     {
         private readonly IContentTypeService _contentTypeService;
         private readonly IDataTypeService _dataTypeService;
@@ -34,9 +34,10 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             _logger = logger;
         }
 
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Begin task");
+            _logger.LogInformation("Begin CreateUmbracoCommerceCheckoutDocumentTypesTask");
+
             // Setup lazy data types
             var textstringDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.TextstringGuid));
             var textareaDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.TextareaGuid));
@@ -90,8 +91,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     Alias = UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage,
                     Name = "[Umbraco Commerce Checkout] Checkout Step Page",
                     Icon = "icon-settings-alt color-green",
-                    PropertyGroups = new PropertyGroupCollection(new[]
-                    {
+                    PropertyGroups = new PropertyGroupCollection([
                         new PropertyGroup(new PropertyTypeCollection(true, checkoutStepProps))
                         {
                             Alias = "settings",
@@ -99,10 +99,15 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                             Type = PropertyGroupType.Group,
                             SortOrder = 100,
                         },
-                    }),
+                    ]),
                 };
 
-                await _contentTypeService.CreateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
+                Attempt<ContentTypeOperationStatus> createAttempt = await _contentTypeService.CreateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
+                if (!createAttempt.Success)
+                {
+                    _logger.LogError(createAttempt.Exception, "Create checkout step page document type attempt status {AttemptStatus}.", createAttempt.Result);
+                    return Fail(createAttempt.Exception);
+                }
             }
             else
             {
@@ -135,13 +140,18 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
                 if (safeExisting)
                 {
-                    await _contentTypeService.UpdateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
+                    Attempt<ContentTypeOperationStatus> updateAttempt = await _contentTypeService.UpdateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
+                    if (!updateAttempt.Success)
+                    {
+                        _logger.LogError(updateAttempt.Exception, "Update checkout step page document type attempt status {AttemptStatus}.", updateAttempt.Result);
+                        return Fail(updateAttempt.Exception);
+                    }
                 }
             }
 
             // Move to the dedicated folder
             _logger.LogInformation("Moving checkout step document types to the correct folder.");
-            _ = _contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
+            _contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Checkout Page
             PropertyType[] checkoutPageProps =
@@ -221,12 +231,10 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     Alias = UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage,
                     Name = "[Umbraco Commerce Checkout] Checkout Page",
                     Icon = "icon-cash-register color-green",
-                    AllowedContentTypes = new[]
-                    {
+                    AllowedContentTypes = [
                         new ContentTypeSort(checkoutStepPageContentType.Key, 1, checkoutStepPageContentType.Alias),
-                    },
-                    PropertyGroups = new PropertyGroupCollection(new[]
-                    {
+                    ],
+                    PropertyGroups = new PropertyGroupCollection([
                         new PropertyGroup(new PropertyTypeCollection(true, checkoutPageProps))
                         {
                             Alias = "settings",
@@ -234,15 +242,20 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                             Type = PropertyGroupType.Group,
                             SortOrder = 50,
                         },
-                    }),
+                    ]),
                 };
 
-                await _contentTypeService.CreateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
+                Attempt<ContentTypeOperationStatus> createAttempt = await _contentTypeService.CreateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
+                if (!createAttempt.Success)
+                {
+                    _logger.LogError(createAttempt.Exception, "Create checkout page attempt status {AttemptStatus}.", createAttempt.Result);
+                    return Fail(createAttempt.Exception);
+                }
             }
             else
             {
-                var safeExisting = false;
-                var hasSettingsGroup = checkoutPageContentType.PropertyGroups.Contains("Settings");
+                bool safeExisting = false;
+                bool hasSettingsGroup = checkoutPageContentType.PropertyGroups.Contains("Settings");
                 PropertyGroup settingsGroup = hasSettingsGroup
                     ? checkoutPageContentType.PropertyGroups["Settings"]
                     : new PropertyGroup(new PropertyTypeCollection(true, checkoutPageProps))
@@ -270,12 +283,17 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
                 if (safeExisting)
                 {
-                    await _contentTypeService.UpdateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
+                    Attempt<ContentTypeOperationStatus> updateAttempt = await _contentTypeService.UpdateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
+                    if (!updateAttempt.Success)
+                    {
+                        _logger.LogError(updateAttempt.Exception, "Update checkout step page document type attempt status {AttemptStatus}.", updateAttempt.Result);
+                        return Fail(updateAttempt.Exception);
+                    }
                 }
             }
 
             // Move to the dedicated folder
-            _ = _contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
+            _contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Continue the pipeline
             return Ok();

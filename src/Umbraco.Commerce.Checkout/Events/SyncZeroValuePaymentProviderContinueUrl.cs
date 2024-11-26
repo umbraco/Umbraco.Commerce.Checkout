@@ -1,130 +1,124 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using Umbraco.Commerce.Core.Models;
-using Umbraco.Commerce.Core.Api;
-using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Events;
-using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.Notifications;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Routing;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Sync;
-using Umbraco.Cms.Core.Services.Changes;
-using Umbraco.Cms.Core.Web;
+using Umbraco.Commerce.Core.Api;
+using Umbraco.Commerce.Core.Models;
+using Umbraco.Commerce.Core.PaymentProviders;
+using Umbraco.Commerce.Extensions;
 using Umbraco.Extensions;
-using Umbraco.Commerce.Checkout.Web;
+using UmbracoCommerceConstants = Umbraco.Commerce.Cms.Constants;
 
 namespace Umbraco.Commerce.Checkout.Events
 {
-    public class SyncZeroValuePaymentProviderContinueUrl : INotificationHandler<ContentCacheRefresherNotification>
+    public class SyncZeroValuePaymentProviderContinueUrl(
+        IDocumentNavigationQueryService documentNavigationQueryService,
+        IContentService contentService,
+        IIdKeyMap keyMap,
+        IServerRoleAccessor serverRoleAccessor,
+        IUmbracoCommerceApi commerceApi,
+        IPublishedUrlProvider publishedUrlProvider)
+        : ContentOfTypeCacheRefresherNotificationHandlerBase(documentNavigationQueryService, contentService, keyMap, serverRoleAccessor)
     {
-        public void Handle(ContentCacheRefresherNotification notification)
+        private readonly IDocumentNavigationQueryService _documentNavigationQueryService = documentNavigationQueryService;
+        private readonly IContentService _contentService = contentService;
+
+        protected override string ContentTypeAlias => UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage;
+
+        protected override async Task HandleContentOfTypeAsync(IContent content)
         {
-            Handle(notification.MessageObject, notification.MessageType);
-        }
-
-        private IUmbracoContextFactory _umbracoContextFactory;
-        private IUmbracoCommerceApi _commerceApi;
-
-        public SyncZeroValuePaymentProviderContinueUrl(IUmbracoContextFactory umbracoContextFactory,
-            IUmbracoCommerceApi commerceApi)
-        {
-            _umbracoContextFactory = umbracoContextFactory;
-            _commerceApi = commerceApi;
-        }
-
-        public void Handle(object messageObject, MessageType messageType)
-        {
-            if (messageType != MessageType.RefreshByPayload)
-                throw new NotSupportedException();
-
-            var payloads = messageObject as ContentCacheRefresher.JsonPayload[];
-            if (payloads == null)
-                return;
-
-            using (var ctx = _umbracoContextFactory.EnsureUmbracoContext())
+            if (IsConfirmationPageType(content))
             {
-                foreach (var payload in payloads)
+                await DoSyncZeroValuePaymentProviderContinueUrlAsync(content);
+            }
+        }
+
+        private static bool IsConfirmationPageType(IContent content)
+        {
+            if (!content.HasProperty("uccStepType"))
+            {
+                return false;
+            }
+
+            if (content.ContentType.Alias != UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage)
+            {
+                return false;
+            }
+
+            var stepValue = content.GetValue<string>("uccStepType");
+            if (stepValue != null && stepValue.StartsWith('[') && stepValue.EndsWith(']'))
+            {
+                stepValue = JsonSerializer.Deserialize<string[]>(stepValue)?.FirstOrDefault();
+            }
+
+            return stepValue == "Confirmation";
+        }
+
+        private async Task DoSyncZeroValuePaymentProviderContinueUrlAsync(IContent content)
+        {
+            if (!content.Published)
+            {
+                // Don't do anything if the content is not published
+                return;
+            }
+
+            // Get the store ID from the store picker in the contents ancestors
+            Guid? storeId = null;
+
+            if (content.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
+            {
+                storeId = content.GetValue<Guid>(UmbracoCommerceConstants.Properties.StorePropertyAlias);
+            }
+            else
+            {
+                if (_documentNavigationQueryService.TryGetAncestorsKeys(content.Key, out IEnumerable<Guid> ancestorsKeys))
                 {
-                    if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshNode))
+                    foreach (Guid ancestorKey in ancestorsKeys)
                     {
-                        // Single node refresh
-                        var node = ctx.UmbracoContext.Content.GetById(payload.Id);
-                        if (node != null && IsConfirmationPageType(node))
+                        IContent? content2 = _contentService.GetById(ancestorKey);
+                        if (content2 != null && content2.HasProperty(UmbracoCommerceConstants.Properties.StorePropertyAlias))
                         {
-                            DoSyncZeroValuePaymentProviderContinueUrl(node);
-                        }
-                    }
-                    else if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshBranch))
-                    {
-                        // Branch refresh
-                        var rootNode = ctx.UmbracoContext.Content.GetById(payload.Id);
-                        if (rootNode != null)
-                        {
-                            var nodeType = ctx.UmbracoContext.Content.GetContentType(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage);
-                            if (nodeType == null)
-                                continue;
-
-                            var nodes = ctx.UmbracoContext.Content.GetByContentType(nodeType);
-
-                            foreach (var node in nodes?.Where(x => IsConfirmationPageType(x) && x.Path.StartsWith(rootNode.Path)))
-                            {
-                                DoSyncZeroValuePaymentProviderContinueUrl(node);
-                            }
-                        }
-                    }
-                    else if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshAll))
-                    {
-                        // All refresh
-                        var nodeType = ctx.UmbracoContext.Content.GetContentType(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage);
-                        if (nodeType == null)
-                            continue;
-
-                        var nodes = ctx.UmbracoContext.Content.GetByContentType(nodeType);
-
-                        foreach (var node in nodes?.Where(x => IsConfirmationPageType(x)))
-                        {
-                            DoSyncZeroValuePaymentProviderContinueUrl(node);
+                            storeId = content2.GetValue<Guid>(UmbracoCommerceConstants.Properties.StorePropertyAlias);
+                            break;
                         }
                     }
                 }
             }
-        }
 
-        private bool IsConfirmationPageType(IPublishedContent node)
-        {
-            if (node == null || node.ContentType == null || !node.HasProperty("uccStepType"))
-                return false;
-
-            return node.ContentType.Alias == UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage && node.Value<string>("uccStepType") == "Confirmation";
-        }
-
-        private void DoSyncZeroValuePaymentProviderContinueUrl(IPublishedContent confirmationNode)
-        {
-            if (confirmationNode == null)
+            if (!storeId.HasValue)
             {
                 return;
             }
 
-            StoreReadOnly? store = confirmationNode.GetStore();
-            if (store == null)
-            {
-                return;
-            }
+            // Get the payment method and set the continue URL
+            PaymentMethodReadOnly paymentMethod = await commerceApi.GetPaymentMethodAsync(storeId.Value, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
 
-            PaymentMethodReadOnly paymentMethod = _commerceApi.GetPaymentMethod(store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
             if (paymentMethod == null)
             {
                 return;
             }
 
-            _commerceApi.Uow.Execute(uow =>
+            IPaymentProvider? paymentProvider = await commerceApi.GetPaymentProviderAsync(paymentMethod.PaymentProviderAlias);
+            PaymentProviderSettingDefinition? setting = paymentProvider?.SettingDefinitions.FirstOrDefault(x => x.Key.InvariantEquals("continueUrl"));
+
+            if (setting != null)
             {
-                PaymentMethod writable = paymentMethod.AsWritable(uow)
-                    .SetSetting("ContinueUrl", confirmationNode.Url());
+                await commerceApi.Uow.ExecuteAsync(async uow =>
+                {
+                    PaymentMethod writable = await paymentMethod.AsWritableAsync(uow)
+                        .SetSettingAsync(setting.Key, publishedUrlProvider.GetUrl(content.Key));
 
-                _commerceApi.SavePaymentMethod(writable);
+                    await commerceApi.SavePaymentMethodAsync(writable);
 
-                uow.Complete();
-            });
+                    uow.Complete();
+                });
+            }
         }
     }
 }

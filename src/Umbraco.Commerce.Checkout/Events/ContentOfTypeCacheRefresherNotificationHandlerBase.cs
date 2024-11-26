@@ -18,7 +18,7 @@ public abstract class ContentOfTypeCacheRefresherNotificationHandlerBase(
     IDocumentNavigationQueryService documentNavigationQueryService,
     IContentService contentService,
     IIdKeyMap keyMap,
-    IServerRoleAccessor serverRoleAccessor) : INotificationAsyncHandler<ContentCacheRefresherNotification>
+    IServerRoleAccessor serverRoleAccessor) : INotificationAsyncHandler<ContentCacheRefresherNotification>, IDistributedCacheNotificationHandler
 {
     protected abstract string ContentTypeAlias { get; }
     protected abstract Task HandleContentOfTypeAsync(IContent content);
@@ -57,6 +57,18 @@ public abstract class ContentOfTypeCacheRefresherNotificationHandlerBase(
             {
                 // Branch refresh
                 Guid rootNodeKey = payload.Key ?? keyMap.GetKeyForId(payload.Id, UmbracoObjectTypes.Document).ResultOr(Guid.Empty);
+
+                // Handle the branch root
+                if (rootNodeKey != Guid.Empty)
+                {
+                    IContent? content = contentService.GetById(rootNodeKey);
+                    if (content != null && content.ContentType.Alias == ContentTypeAlias)
+                    {
+                        await HandleContentOfTypeAsync(content);
+                    }
+                }
+
+                // Handle the descendants
                 if (rootNodeKey != Guid.Empty && documentNavigationQueryService.TryGetDescendantsKeysOfType(rootNodeKey, ContentTypeAlias, out IEnumerable<Guid> keys))
                 {
                     foreach (Guid key in keys)
@@ -71,6 +83,20 @@ public abstract class ContentOfTypeCacheRefresherNotificationHandlerBase(
             }
             else if (payload.ChangeTypes.HasType(TreeChangeTypes.RefreshAll))
             {
+                // Handle root nodes
+                if (documentNavigationQueryService.TryGetRootKeysOfType(ContentTypeAlias, out IEnumerable<Guid> rootKeysOfType))
+                {
+                    foreach (Guid rootKey in rootKeysOfType)
+                    {
+                        IContent? content = contentService.GetById(rootKey);
+                        if (content != null)
+                        {
+                            await HandleContentOfTypeAsync(content);
+                        }
+                    }
+                }
+
+                // Handle descendants
                 if (documentNavigationQueryService.TryGetRootKeys(out IEnumerable<Guid> rootKeys))
                 {
                     foreach (Guid rootKey in rootKeys)

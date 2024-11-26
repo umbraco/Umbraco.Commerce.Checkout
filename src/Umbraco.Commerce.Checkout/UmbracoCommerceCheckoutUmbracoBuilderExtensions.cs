@@ -7,6 +7,7 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Commerce.Checkout.Configuration;
 using Umbraco.Commerce.Checkout.Events;
 using Umbraco.Commerce.Checkout.Extensions;
+using Umbraco.Commerce.Checkout.Helpers;
 using Umbraco.Commerce.Checkout.Services;
 
 namespace Umbraco.Commerce.Checkout
@@ -44,6 +45,9 @@ namespace Umbraco.Commerce.Checkout
 
             // Register services
             builder.Services.AddSingleton<InstallService>();
+
+            // Register helpers
+            builder.Services.AddSingleton<StoreCheckoutRelationHelper>();
 
             // Register Umbraco event handlers
             builder.AddNotificationAsyncHandler<ContentCacheRefresherNotification, SyncZeroValuePaymentProviderContinueUrl>();

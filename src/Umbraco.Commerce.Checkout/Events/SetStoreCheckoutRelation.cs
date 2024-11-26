@@ -52,7 +52,7 @@ public class SetStoreCheckoutRelation(
 
     private void EnsureStoreCheckoutRelation(IContent storeRootPage, IContent checkoutPage)
     {
-        if (!relationService.AreRelated(checkoutPage.Id, storeRootPage.Id, UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout))
+        if (!relationService.AreRelated(storeRootPage.Id, checkoutPage.Id, UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout))
         {
             IRelationType? relationType = relationService.GetRelationTypeByAlias(UmbracoCommerceCheckoutConstants.RelationTypes.Aliases.StoreCheckout);
 

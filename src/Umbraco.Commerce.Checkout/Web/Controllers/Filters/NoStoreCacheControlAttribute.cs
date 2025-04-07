@@ -7,9 +7,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers.Filters
     /// </summary>
     internal sealed class NoStoreCacheControlAttribute : ActionFilterAttribute
     {
-        public override void OnActionExecuted(ActionExecutedContext context)
-        {
+        public override void OnActionExecuted(ActionExecutedContext context) =>
             context.HttpContext.Response.Headers.CacheControl = "no-store";
-        }
     }
 }

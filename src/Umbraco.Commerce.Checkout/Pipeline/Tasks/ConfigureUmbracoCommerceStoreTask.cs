@@ -5,60 +5,60 @@ using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Common.Pipelines.Tasks;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
+using Umbraco.Commerce.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class ConfigureUmbracoCommerceStoreTask : AsyncPipelineTaskBase<InstallPipelineContext>
+    public class ConfigureUmbracoCommerceStoreTask : PipelineTaskBase<InstallPipelineContext>
     {
         private readonly IUmbracoCommerceApi _commerceApi;
 
-        public ConfigureUmbracoCommerceStoreTask(IUmbracoCommerceApi commerceApi)
+        public ConfigureUmbracoCommerceStoreTask(IUmbracoCommerceApi commerceApi) => _commerceApi = commerceApi;
+
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
-            _commerceApi = commerceApi;
-        }
-
-        public override Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
-        {
-            _commerceApi.Uow.Execute(uow =>
-            {
-                // Update order confirmation email
-                Guid? orderConfirmationEmailId = args.Model.Store.ConfirmationEmailTemplateId;
-                if (orderConfirmationEmailId.HasValue)
+            await _commerceApi.Uow.ExecuteAsync(
+                async uow =>
                 {
-                    EmailTemplate orderConfirmationEmail = _commerceApi.GetEmailTemplate(orderConfirmationEmailId.Value)
-                        .AsWritable(uow)
-                        .SetTemplateView("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutOrderConfirmationEmail.cshtml");
+                    // Update order confirmation email
+                    Guid? orderConfirmationEmailId = args.Model.Store.ConfirmationEmailTemplateId;
+                    if (orderConfirmationEmailId.HasValue)
+                    {
+                        EmailTemplate orderConfirmationEmail = await _commerceApi.GetEmailTemplateAsync(orderConfirmationEmailId.Value)
+                            .AsWritableAsync(uow)
+                            .SetTemplateViewAsync("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutOrderConfirmationEmail.cshtml");
 
-                    _commerceApi.SaveEmailTemplate(orderConfirmationEmail);
+                        await _commerceApi.SaveEmailTemplateAsync(orderConfirmationEmail, cancellationToken);
+                    }
+
+                    // Update order confirmation email
+                    Guid? orderErrorEmailId = args.Model.Store.ErrorEmailTemplateId;
+                    if (orderErrorEmailId.HasValue)
+                    {
+                        EmailTemplate orderErrorEmail = await _commerceApi.GetEmailTemplateAsync(orderErrorEmailId.Value)
+                            .AsWritableAsync(uow)
+                            .SetTemplateViewAsync("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutOrderErrorEmail.cshtml");
+
+                        await _commerceApi.SaveEmailTemplateAsync(orderErrorEmail, cancellationToken);
+                    }
+
+                    // Update gift card email
+                    Guid? giftCardEmailId = args.Model.Store.DefaultGiftCardEmailTemplateId;
+                    if (giftCardEmailId.HasValue)
+                    {
+                        EmailTemplate giftCardEmail = await _commerceApi.GetEmailTemplateAsync(giftCardEmailId.Value)
+                            .AsWritableAsync(uow)
+                            .SetTemplateViewAsync("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutGiftCardEmail.cshtml");
+
+                        await _commerceApi.SaveEmailTemplateAsync(giftCardEmail, cancellationToken);
+                    }
+
+                    uow.Complete();
                 }
-
-                // Update order confirmation email
-                Guid? orderErrorEmailId = args.Model.Store.ErrorEmailTemplateId;
-                if (orderErrorEmailId.HasValue)
-                {
-                    EmailTemplate orderErrorEmail = _commerceApi.GetEmailTemplate(orderErrorEmailId.Value)
-                        .AsWritable(uow)
-                        .SetTemplateView("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutOrderErrorEmail.cshtml");
-
-                    _commerceApi.SaveEmailTemplate(orderErrorEmail);
-                }
-
-                // Update gift card email
-                Guid? giftCardEmailId = args.Model.Store.DefaultGiftCardEmailTemplateId;
-                if (giftCardEmailId.HasValue)
-                {
-                    EmailTemplate giftCardEmail = _commerceApi.GetEmailTemplate(giftCardEmailId.Value)
-                        .AsWritable(uow)
-                        .SetTemplateView("~/Views/UmbracoCommerceCheckout/Templates/Email/UmbracoCommerceCheckoutGiftCardEmail.cshtml");
-
-                    _commerceApi.SaveEmailTemplate(giftCardEmail);
-                }
-
-                uow.Complete();
-            });
+            , cancellationToken);
 
             // Continue the pipeline
-            return Task.FromResult(Ok());
+            return Ok();
         }
     }
 }

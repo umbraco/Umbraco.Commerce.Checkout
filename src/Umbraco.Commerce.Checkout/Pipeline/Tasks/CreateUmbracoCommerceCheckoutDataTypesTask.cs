@@ -3,34 +3,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Services.OperationStatus;
 using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Common.Pipelines.Tasks;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutDataTypesTask : AsyncPipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutDataTypesTask : PipelineTaskBase<InstallPipelineContext>
     {
+        private readonly ILogger<CreateUmbracoCommerceCheckoutDataTypesTask> _logger;
         private readonly IDataTypeService _dataTypeService;
         private readonly PropertyEditorCollection _propertyEditors;
-
         private readonly IConfigurationEditorJsonSerializer _configurationEditorJsonSerializer;
 
         public CreateUmbracoCommerceCheckoutDataTypesTask(
+            ILogger<CreateUmbracoCommerceCheckoutDataTypesTask> logger,
             IDataTypeService dataTypeService,
             PropertyEditorCollection propertyEditors,
             IConfigurationEditorJsonSerializer configurationEditorJsonSerializer)
         {
+            _logger = logger;
             _dataTypeService = dataTypeService;
             _propertyEditors = propertyEditors;
             _configurationEditorJsonSerializer = configurationEditorJsonSerializer;
         }
 
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
             // Theme Color Picker
             if (_propertyEditors.TryGet(Constants.PropertyEditors.Aliases.ColorPicker, out IDataEditor? colorPickerDataEditor))
@@ -59,7 +63,12 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                 _configurationEditorJsonSerializer);
                     });
 
-                    await _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
+                    Attempt<IDataType, DataTypeOperationStatus> createAttempt = await _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
+                    if (!createAttempt.Success)
+                    {
+                        _logger.LogError(createAttempt.Exception, "Create theme color picker attempt status {AttemptStatus}.", createAttempt.Status);
+                        return Fail(createAttempt.Exception);
+                    }
                 }
                 else
                 {
@@ -78,7 +87,12 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                 },
                                 _configurationEditorJsonSerializer);
 
-                    await _dataTypeService.UpdateAsync(currentColorPicker, Constants.Security.SuperUserKey);
+                    Attempt<IDataType, DataTypeOperationStatus> updateAttempt = await _dataTypeService.UpdateAsync(currentColorPicker, Constants.Security.SuperUserKey);
+                    if (!updateAttempt.Success)
+                    {
+                        _logger.LogError(updateAttempt.Exception, "Update theme color picker attempt status {AttemptStatus}.", updateAttempt.Status);
+                        return Fail(updateAttempt.Exception);
+                    }
                 }
             }
 
@@ -114,7 +128,12 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                 _configurationEditorJsonSerializer);
                     });
 
-                    await _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
+                    Attempt<IDataType, DataTypeOperationStatus> createAttempt = await _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
+                    if (!createAttempt.Success)
+                    {
+                        _logger.LogError(createAttempt.Exception, "Create Step Picker attempt status {AttemptStatus}.", createAttempt.Status);
+                        return Fail(createAttempt.Exception);
+                    }
                 }
                 else
                 {
@@ -129,7 +148,12 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                             },
                             _configurationEditorJsonSerializer);
 
-                    await _dataTypeService.UpdateAsync(currentStepPicker, Constants.Security.SuperUserKey);
+                    Attempt<IDataType, DataTypeOperationStatus> updateAttempt = await _dataTypeService.UpdateAsync(currentStepPicker, Constants.Security.SuperUserKey);
+                    if (!updateAttempt.Success)
+                    {
+                        _logger.LogError(updateAttempt.Exception, "Update step picker attempt status {AttemptStatus}.", updateAttempt.Status);
+                        return Fail(updateAttempt.Exception);
+                    }
                 }
             }
 

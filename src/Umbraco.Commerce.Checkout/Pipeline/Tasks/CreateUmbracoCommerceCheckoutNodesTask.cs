@@ -11,7 +11,7 @@ using Umbraco.Commerce.Common.Pipelines.Tasks;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutNodesTask : AsyncPipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutNodesTask : PipelineTaskBase<InstallPipelineContext>
     {
         private readonly IScopeProvider _scopeProvider;
         private readonly IContentTypeService _contentTypeService;
@@ -27,7 +27,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             _contentService = contentService;
         }
 
-        public override Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken = default)
+        public override Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
         {
             using (IScope scope = _scopeProvider.CreateScope())
             {

@@ -7,6 +7,7 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Commerce.Checkout.Configuration;
 using Umbraco.Commerce.Checkout.Events;
 using Umbraco.Commerce.Checkout.Extensions;
+using Umbraco.Commerce.Checkout.Helpers;
 using Umbraco.Commerce.Checkout.Services;
 
 namespace Umbraco.Commerce.Checkout
@@ -19,7 +20,7 @@ namespace Umbraco.Commerce.Checkout
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            // If the Umbraco Commerce Checkout InstallService is registred then we assume everything is already registered so we don't do it again.
+            // If the Umbraco Commerce Checkout InstallService is registered then we assume everything is already registered so we don't do it again.
             if (builder.Services.FirstOrDefault(x => x.ServiceType == typeof(InstallService)) != null)
             {
                 return builder;
@@ -45,8 +46,12 @@ namespace Umbraco.Commerce.Checkout
             // Register services
             builder.Services.AddSingleton<InstallService>();
 
+            // Register helpers
+            builder.Services.AddSingleton<StoreCheckoutRelationHelper>();
+
             // Register Umbraco event handlers
-            builder.AddNotificationHandler<ContentCacheRefresherNotification, SyncZeroValuePaymentProviderContinueUrl>();
+            builder.AddNotificationAsyncHandler<ContentCacheRefresherNotification, SyncZeroValuePaymentProviderContinueUrl>();
+            builder.AddNotificationAsyncHandler<ContentCacheRefresherNotification, SetStoreCheckoutRelation>();
 
             return builder;
         }

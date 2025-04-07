@@ -17,23 +17,23 @@ namespace Umbraco.Commerce.Checkout.Extensions
 
             // Reset shipping / payment methods when certain elements of
             // an order change
-            commerceBuilder.WithNotificationEvent<OrderProductAddingNotification>()
-                .RegisterHandler<OrderProductAddingHandler>();
-
-            commerceBuilder.WithNotificationEvent<OrderLineChangingNotification>()
-                .RegisterHandler<OrderLineChangingHandler>();
-
-            commerceBuilder.WithNotificationEvent<OrderLineRemovingNotification>()
-                .RegisterHandler<OrderLineRemovingHandler>();
-
-            commerceBuilder.WithNotificationEvent<OrderPaymentCountryRegionChangingNotification>()
-                .RegisterHandler<OrderPaymentCountryRegionChangingHandler>();
-
-            commerceBuilder.WithNotificationEvent<OrderShippingCountryRegionChangingNotification>()
-                .RegisterHandler<OrderShippingCountryRegionChangingHandler>();
-
-            commerceBuilder.WithNotificationEvent<OrderShippingMethodChangingNotification>()
-                .RegisterHandler<OrderShippingMethodChangingHandler>();
+            // commerceBuilder.WithNotificationEvent<OrderProductAddingNotification>()
+            //     .RegisterHandler<OrderProductAddingHandler>();
+            //
+            // commerceBuilder.WithNotificationEvent<OrderLineChangingNotification>()
+            //     .RegisterHandler<OrderLineChangingHandler>();
+            //
+            // commerceBuilder.WithNotificationEvent<OrderLineRemovingNotification>()
+            //     .RegisterHandler<OrderLineRemovingHandler>();
+            //
+            // commerceBuilder.WithNotificationEvent<OrderPaymentCountryRegionChangingNotification>()
+            //     .RegisterHandler<OrderPaymentCountryRegionChangingHandler>();
+            //
+            // commerceBuilder.WithNotificationEvent<OrderShippingCountryRegionChangingNotification>()
+            //     .RegisterHandler<OrderShippingCountryRegionChangingHandler>();
+            //
+            // commerceBuilder.WithNotificationEvent<OrderShippingMethodChangingNotification>()
+            //     .RegisterHandler<OrderShippingMethodChangingHandler>();
 
             return builder;
         }
@@ -41,7 +41,7 @@ namespace Umbraco.Commerce.Checkout.Extensions
         public static IBuilder AddUmbracoCommerceInstallPipeline(this IBuilder builder)
         {
             IUmbracoCommerceBuilder commerceBuilder = builder.WithUmbracoCommerceBuilder();
-            commerceBuilder.WithAsyncPipeline<InstallAsyncPipelineTask, InstallPipelineContext>()
+            commerceBuilder.WithPipeline<InstallAsyncPipelineTask, InstallPipelineContext>()
                 .Add<CreateUmbracoCommerceCheckoutDataTypesTask>()
                 .Add<CreateUmbracoCommerceCheckoutDocumentTypesTask>()
                 .Add<CreateUmbracoCommerceCheckoutNodesTask>()

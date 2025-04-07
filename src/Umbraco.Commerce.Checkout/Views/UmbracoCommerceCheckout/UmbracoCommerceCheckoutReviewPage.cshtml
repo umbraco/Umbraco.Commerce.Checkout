@@ -4,19 +4,19 @@
 
     var store = Model.GetStore();
 
-    var currentOrder = UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id);
+    var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id);
 }
 
-@Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutOrderInfo.cshtml", currentOrder)
+@await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutOrderInfo.cshtml", currentOrder)
 
-@using (Html.BeginPaymentForm(currentOrder))
+@using (await Html.BeginPaymentFormAsync(currentOrder))
 {
     <div class="border border-gray-300 rounded">
         <label class="flex items-center py-4 px-4 cursor-pointer hover:bg-gray-50">
-            <input id="accept-terms" type="checkbox" class="mr-3" autocomplete="off"/>
+            <input id="accept-terms" type="checkbox" class="mr-3" autocomplete="off" />
             <span class="font-medium">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.ReviewOrder.AcceptTerms", "I agree and accept the sites terms of service")</span>
         </label>
     </div>
-    
-    @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
+
+    @await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

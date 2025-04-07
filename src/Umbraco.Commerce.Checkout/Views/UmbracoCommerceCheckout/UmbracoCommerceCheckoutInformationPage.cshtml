@@ -1,13 +1,13 @@
-@using Newtonsoft.Json;
+@using System.Text.Json
 @inherits UmbracoViewPage
 @{
     Layout = "UmbracoCommerceCheckoutLayout.cshtml";
 
     var store = Model.GetStore();
 
-    var currentOrder = UmbracoCommerceApi.Instance.GetCurrentOrder(store.Id);
+    var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id);
 
-    var countries = UmbracoCommerceApi.Instance.GetCountries(store.Id);
+    var countries = await UmbracoCommerceApi.Instance.GetCountriesAsync(store.Id);
 
     var checkoutPage = Model.GetCheckoutPage();
     var nextStepPage = Model.GetNextStepPage();
@@ -72,10 +72,10 @@
             @foreach (var country in countries)
             {
                 <option value="@(country.Id)" @Html.Raw(currentOrder.PaymentInfo.CountryId == country.Id ? "selected=\"selected\"" : "")
-                        data-regions="@(JsonConvert.SerializeObject(UmbracoCommerceApi.Instance.GetRegions(country.StoreId, country.Id).Select(x => new
-                {
+                        data-regions="@(JsonSerializer.Serialize((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
+                        {
                             id = x.Id,
-                            name = x.Name
+                            name = x.Name,
                         })))">
                     @(country.Name)
                 </option>
@@ -119,9 +119,10 @@
                     @foreach (var country in countries)
                     {
                         <option value="@(country.Id)" @Html.Raw(currentOrder.ShippingInfo.CountryId == country.Id ? "selected=\"selected\"" : "")
-                                data-regions="@(JsonConvert.SerializeObject(UmbracoCommerceApi.Instance.GetRegions(country.StoreId, country.Id).Select(x => new {
+                                data-regions="@(JsonSerializer.Serialize((await UmbracoCommerceApi.Instance.GetRegionsAsync(country.StoreId, country.Id)).Select(x => new
+                                {
                                     id = x.Id,
-                                    name = x.Name
+                                    name = x.Name,
                                 })))">
                             @(country.Name)
                         </option>
@@ -141,5 +142,5 @@
     <h3 class="text-xl font-medium mb-4 mt-8">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Comments", "Comments")</h3>
     <textarea name="comments" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.EnterComments", "Enter comments here")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full h-32">@(currentOrder.Properties["comments"])</textarea>
 
-    @Html.Partial("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
+    @await Html.PartialAsync("~/Views/UmbracoCommerceCheckout/Partials/UmbracoCommerceCheckoutPrevNext.cshtml")
 }

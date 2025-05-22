@@ -1,13 +1,11 @@
-import type { UmbModalContext } from '@umbraco-cms/backoffice/modal';
-import { css, customElement, html, ifDefined, LitElement, nothing, property, state } from '@umbraco-cms/backoffice/external/lit';
+import type { ManifestModal, UmbModalContext, UmbModalExtensionElement } from '@umbraco-cms/backoffice/modal';
+import { css, customElement, html, ifDefined, LitElement, property, state } from '@umbraco-cms/backoffice/external/lit';
 import { UmbElementMixin } from '@umbraco-cms/backoffice/element-api';
-import { ManifestModal, UmbModalExtensionElement } from '@umbraco-cms/backoffice/extension-registry';
 import { UccInstallerModalSubmitValue } from './installer-modal.token';
 import { UmbInputDocumentElement } from '@umbraco-cms/backoffice/document';
 import type { UUIButtonState } from '@umbraco-cms/backoffice/external/uui';
 import { installUmbracoCommerceCheckoutAsync } from '../apis/install.api';
 import { UMB_NOTIFICATION_CONTEXT, UmbNotificationContext } from '@umbraco-cms/backoffice/notification';
-
 
 const ELEMENT_NAME = 'ucc-installer-config-modal';
 

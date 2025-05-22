@@ -1,24 +1,18 @@
 import { LitElement, css, html, customElement } from '@umbraco-cms/backoffice/external/lit';
 import { UmbElementMixin } from '@umbraco-cms/backoffice/element-api';
-import { UMB_MODAL_MANAGER_CONTEXT } from '@umbraco-cms/backoffice/modal';
+import { umbOpenModal } from '@umbraco-cms/backoffice/modal';
 import { UCC_INSTALLER_MODAL_TOKEN } from '../modals/installer-modal.token';
 
 const ELEMENT_NAME = 'uc-checkout-installer-dashboard';
 @customElement(ELEMENT_NAME)
 export class UcCheckoutInstallerDashboard extends UmbElementMixin(LitElement) {
 
-  #modalManagerContext?: typeof UMB_MODAL_MANAGER_CONTEXT.TYPE;
-
   constructor() {
     super();
-    this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, (instance) => {
-      this.#modalManagerContext = instance;
-      // modalManagerContext is now ready to be used.
-    });
   }
 
   #onOpenRootPickerClick() {
-    this.#modalManagerContext?.open(this, UCC_INSTALLER_MODAL_TOKEN, {
+    umbOpenModal(this, UCC_INSTALLER_MODAL_TOKEN, {
       data: {},
     });
   }

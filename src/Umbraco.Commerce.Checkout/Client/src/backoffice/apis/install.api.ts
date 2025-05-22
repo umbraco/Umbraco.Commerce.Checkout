@@ -6,7 +6,7 @@ export type InstallUccApiResponse = {
 
 export const OpenApiConfig: {
     credentials: RequestCredentials,
-    token: () => Promise<string>,
+    token: () => Promise<string | undefined>,
 } = {
     credentials: 'same-origin',
     token: async () => '',

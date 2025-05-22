@@ -1,5 +1,4 @@
 const plugin = require('tailwindcss/plugin');
-const selectorParser = require('postcss-selector-parser');
 
 module.exports = plugin(function ({ addVariant, e }) {
 

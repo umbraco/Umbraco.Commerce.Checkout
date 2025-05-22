@@ -58,12 +58,14 @@ function init() {
     // Enable / disable continue button when accepting terms
     const acceptTermsEl = document.getElementById('accept-terms') as HTMLInputElement;
     const continueBtn = document.getElementById('continue') as HTMLButtonElement;
-    if (acceptTermsEl) {
+    if (continueBtn) {
+      if (acceptTermsEl) {
         acceptTermsEl.addEventListener('change', () => {
-            continueBtn.disabled = !acceptTermsEl.checked;
+          continueBtn.disabled = !acceptTermsEl.checked;
         });
-    } else {
+      } else {
         continueBtn.disabled = false;
+      }
     }
 }
 

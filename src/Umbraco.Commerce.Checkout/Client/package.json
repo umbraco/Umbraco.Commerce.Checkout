@@ -12,7 +12,7 @@
   "devDependencies": {
     "@eslint/js": "^9.27.0",
     "@types/eslint__js": "^8.42.3",
-    "@umbraco-cms/backoffice": "^16.0.0-rc3",
+    "@umbraco-cms/backoffice": "^16.0.0",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.27.0",
     "globals": "^16.1.0",

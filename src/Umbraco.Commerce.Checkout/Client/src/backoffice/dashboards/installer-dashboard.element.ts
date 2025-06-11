@@ -1,66 +1,62 @@
 import { LitElement, css, html, customElement } from '@umbraco-cms/backoffice/external/lit';
 import { UmbElementMixin } from '@umbraco-cms/backoffice/element-api';
-import { UMB_MODAL_MANAGER_CONTEXT } from '@umbraco-cms/backoffice/modal';
+import { umbOpenModal } from '@umbraco-cms/backoffice/modal';
 import { UCC_INSTALLER_MODAL_TOKEN } from '../modals/installer-modal.token';
 
 const ELEMENT_NAME = 'uc-checkout-installer-dashboard';
 @customElement(ELEMENT_NAME)
 export class UcCheckoutInstallerDashboard extends UmbElementMixin(LitElement) {
 
-  #modalManagerContext?: typeof UMB_MODAL_MANAGER_CONTEXT.TYPE;
-
   constructor() {
     super();
-    this.consumeContext(UMB_MODAL_MANAGER_CONTEXT, (instance) => {
-      this.#modalManagerContext = instance;
-      // modalManagerContext is now ready to be used.
-    });
   }
 
   #onOpenRootPickerClick() {
-    this.#modalManagerContext?.open(this, UCC_INSTALLER_MODAL_TOKEN, {
+    umbOpenModal(this, UCC_INSTALLER_MODAL_TOKEN, {
       data: {},
     });
   }
 
   render() {
     return html`
-     <uui-box>
-        <div class="ucc-installer-wrapper">
+      <umb-body-layout header-transparent>
+        <uui-box>
+          <div class="ucc-installer-wrapper">
 
-            <!-- Header -->
-            <div>
-                <div style="display: inline-flex; align-items: center; justify-content: center; background-color: #141432; width: 120px; height: 120px; border-radius: 100%;">
-                  <uui-icon name='icon-cash-register' style="color: white; font-size: 80px;"></uui-icon>
-                </div>
-            </div>
-            <div class="installer-intro" style="margin-bottom: 5px;">
-                <h3>Checkout</h3>
-            </div>
-            <p>
-                Umbraco Commerce Checkout provides a ready made checkout flow for Umbraco Commerce
-            </p>
+              <!-- Header -->
+              <div>
+                  <div style="display: inline-flex; align-items: center; justify-content: center; background-color: #141432; width: 120px; height: 120px; border-radius: 100%;">
+                    <uui-icon name='icon-cash-register' style="color: white; font-size: 80px;"></uui-icon>
+                  </div>
+              </div>
+              <div class="installer-intro" style="margin-bottom: 5px;">
+                  <h3>Checkout</h3>
+              </div>
+              <p>
+                  Umbraco Commerce Checkout provides a ready made checkout flow for Umbraco Commerce
+              </p>
 
-            <!-- Installer -->
-            <h4>Getting Started</h4>
-            <p style="margin-bottom: 10px;">
-              To get started with Umbraco Commerce Checkout we first need to install all the related content.<br />
-              By clicking the <strong>Install</strong> button below Umbraco Commerce Checkout will install all the Data Types,<br />
-              Doc Types and Content nodes needed.
-            </p>
-            <p>
-              If you have installed Umbraco Commerce Checkout before, the installer will also perform the relevant upgrades.<br />
-              <br /><strong>NB: Nothing</strong> will be removed as part of an upgrade.
-            </p>
-            <p style="margin-top: 30px;">
-                <uui-button
-                  look="primary"
-                  label="Install"
-                  type="button"
-                  @click=${this.#onOpenRootPickerClick}></uui-button>
-            </p>
-        </div>
-  </uui-box>
+              <!-- Installer -->
+              <h4>Getting Started</h4>
+              <p style="margin-bottom: 10px;">
+                To get started with Umbraco Commerce Checkout we first need to install all the related content.<br />
+                By clicking the <strong>Install</strong> button below Umbraco Commerce Checkout will install all the Data Types,<br />
+                Doc Types and Content nodes needed.
+              </p>
+              <p>
+                If you have installed Umbraco Commerce Checkout before, the installer will also perform the relevant upgrades.<br />
+                <br /><strong>NB: Nothing</strong> will be removed as part of an upgrade.
+              </p>
+              <p style="margin-top: 30px;">
+                  <uui-button
+                    look="primary"
+                    label="Install"
+                    type="button"
+                    @click=${this.#onOpenRootPickerClick}></uui-button>
+              </p>
+          </div>
+        </uui-box>
+      </umb-body-layout>
     `;
   }
 

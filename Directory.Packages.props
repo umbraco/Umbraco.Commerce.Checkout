@@ -4,14 +4,14 @@
   </PropertyGroup>
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" />
-    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
-    <GlobalPackageReference Include="Umbraco.Code" Version="[2.2.0, 3)" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.7.115" />
+    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556" />
+    <GlobalPackageReference Include="Umbraco.Code" Version="2.3.0" />
     <GlobalPackageReference Include="Umbraco.GitVersioning.Extensions" Version="0.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Umbraco.Commerce.Cms.Startup" Version="[15.0.0, 15.999.999)" />
-    <PackageVersion Include="Umbraco.Cms.Core" Version="[15.0.0, 16)" />
-    <PackageVersion Include="Umbraco.Cms.Web.Website" Version="[15.0.0, 16)" />
+    <PackageVersion Include="Umbraco.Commerce.Cms.Startup" Version="[16.0.0, 16.999.999)" />
+    <PackageVersion Include="Umbraco.Cms.Core" Version="[16.0.0, 16.999.999)" />
+    <PackageVersion Include="Umbraco.Cms.Web.Website" Version="[16.0.0, 16.999.999)" />
   </ItemGroup>
 </Project>

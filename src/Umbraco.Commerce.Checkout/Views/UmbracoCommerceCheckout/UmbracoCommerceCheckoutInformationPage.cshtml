@@ -11,8 +11,6 @@
 
     var checkoutPage = Model.GetCheckoutPage();
     var nextStepPage = Model.GetNextStepPage();
-
-    var themeColor = Model.GetThemeColor();
 }
 
 @section aside {
@@ -20,7 +18,7 @@
         @using (Html.BeginUmbracoForm("ApplyDiscountOrGiftCardCode", "UmbracoCommerceCheckoutSurface", null, new { @class = "flex w-full m-0" }))
         {
             <input type="text" name="code" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.DiscountGiftCode", "Discount / Gift Card Code")" class="flex-1 py-2 px-4 border border-gray-300 rounded placeholder-gray-700" />
-            <button class="ml-4 bg-@(themeColor) text-white px-4 rounded hover:bg-gray-900" type="submit">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Apply", "Apply")</button>
+            <button class="ucc-bg-color ml-4 text-white px-4 rounded hover:bg-gray-900" type="submit">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Apply", "Apply")</button>
         }
 
         @if (currentOrder.DiscountCodes.Count > 0 || currentOrder.GiftCards.Count > 0)

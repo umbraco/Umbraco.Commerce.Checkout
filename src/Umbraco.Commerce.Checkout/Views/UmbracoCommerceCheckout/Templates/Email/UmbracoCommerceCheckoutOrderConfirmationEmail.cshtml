@@ -32,10 +32,26 @@
     }
 
     var uccStoreLogoUrl = checkoutPage.Value<IPublishedContent>("uccStoreLogo")?.Url();
+    if (string.IsNullOrWhiteSpace(uccStoreLogoUrl))
+    {
+        uccStoreLogoUrl = store.LogoImageUrl;
+    }
+
     var uccStoreTsAndCsUrl = checkoutPage.Value<IPublishedContent>("uccTermsAndConditionsPage")?.Url();
     var uccStorePrivacyPolicyUrl = checkoutPage.Value<IPublishedContent>("uccPrivacyPolicyPage")?.Url();
+
     var uccStoreAddress = checkoutPage.Value<string>("uccStoreAddress");
-    var uccThemeColor = checkoutPage.Value<string>("uccThemeColor", defaultValue: "000000");
+    if (string.IsNullOrWhiteSpace(uccStoreAddress) && store.DefaultLocationId.HasValue)
+    {
+        // If the store address is not set, we can try to get it from the default location
+        var location = await UmbracoCommerceApi.GetLocationAsync(store.DefaultLocationId.Value);
+        if (location != null)
+        {
+            uccStoreAddress = $"{location.AddressLine1}, {location.City}, {location.ZipCode}";
+        }
+    }
+
+    var uccThemeColor = checkoutPage.Value<string>("uccThemeColor", defaultValue: store.ThemeColor ?? "#000000");
 }
 <style type="text/css">
     #ucc, #ucc td, #ucc p {
@@ -69,9 +85,9 @@
                                 }
 
                                 <hr style="border: 0; height: 1px; background: #ebebe9; margin: 20px 0;" />
-                                <h2 style="margin: 0 0 20px; font-size: 20px; line-height: 28px; color: #@(uccThemeColor);">Order Confirmation - #@(Model.OrderNumber)</h2>
+                                <h2 style="margin: 0 0 20px; font-size: 20px; line-height: 28px; color: @(uccThemeColor);">Order Confirmation - #@(Model.OrderNumber)</h2>
                                 <p>
-                                    Thank you for your order with <a href="@(BaseUrl)" target="_blank" style="color: #@(uccThemeColor);">@(store.Name)</a>, your order details can be found below.
+                                    Thank you for your order with <a href="@(BaseUrl)" target="_blank" style="color: @(uccThemeColor);">@(store.Name)</a>, your order details can be found below.
                                 </p>
                             </div>
 
@@ -324,10 +340,10 @@
                                 }
                                 <tr>
                                     <td style="vertical-align: top; padding-top: 20px;">
-                                        <strong style="color: #@(uccThemeColor);">Order Total</strong>
+                                        <strong style="color: @(uccThemeColor);">Order Total</strong>
                                     </td>
                                     <td style="vertical-align: top; padding-top: 20px; text-align: right; white-space: nowrap;">
-                                        <strong style="color: #@(uccThemeColor);">
+                                        <strong style="color: @(uccThemeColor);">
                                             @await Model.TotalPrice.Value.FormattedAsync()
                                         </strong>
                                     </td>
@@ -337,7 +353,7 @@
                             <p style="text-align: center;">
                                 @DateTime.Now.ToShortDateString()
                                 <br />
-                                <a href="@(BaseUrl + uccStoreTsAndCsUrl)" target="_blank" style="color: #@(uccThemeColor);">Terms of Service</a> | <a href="@(BaseUrl + uccStorePrivacyPolicyUrl)" target="_blank" style="color: #@(uccThemeColor);">Privacy Policy</a>
+                                <a href="@(BaseUrl + uccStoreTsAndCsUrl)" target="_blank" style="color: @(uccThemeColor);">Terms of Service</a> | <a href="@(BaseUrl + uccStorePrivacyPolicyUrl)" target="_blank" style="color: @(uccThemeColor);">Privacy Policy</a>
                             </p>
                             <p style="text-align: center; margin-bottom: 0;">@(store.Name), @(uccStoreAddress)</p>
 

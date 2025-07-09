@@ -10,7 +10,7 @@
     <GlobalPackageReference Include="Umbraco.GitVersioning.Extensions" Version="0.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Umbraco.Commerce.Cms.Startup" Version="[16.0.0, 16.999.999)" />
+    <PackageVersion Include="Umbraco.Commerce.Cms.Startup" Version="[16.1.0--preview.10, 16.999.999)" />
     <PackageVersion Include="Umbraco.Cms.Core" Version="[16.0.0, 16.999.999)" />
     <PackageVersion Include="Umbraco.Cms.Web.Website" Version="[16.0.0, 16.999.999)" />
   </ItemGroup>

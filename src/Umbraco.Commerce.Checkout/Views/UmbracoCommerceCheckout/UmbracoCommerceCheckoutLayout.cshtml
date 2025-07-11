@@ -1,3 +1,4 @@
+@using StackExchange.Profiling.Internal
 @inherits UmbracoViewPage
 @{
     Layout = null;
@@ -31,6 +32,14 @@
     <meta name="robots" content="noindex, nofollow" />
     <link href="/App_Plugins/UmbracoCommerceCheckout/uccheckout.surface.css" rel="stylesheet">
     @await RenderSectionAsync("head", false)
+    <style>
+        .ucc-text-color {
+            color: @(themeColor);
+        }
+        .ucc-bg-color {
+            background-color: @(themeColor);
+        }
+    </style>
 </head>
 <body>
     <div class="relative text-sm">
@@ -45,6 +54,10 @@
                 @if (checkoutPage.HasValue("uccStoreLogo"))
                 {
                     <a href="/"><img src="@Html.Raw(Url.GetCropUrl(checkoutPage.Value<IPublishedContent>("uccStoreLogo"), 200, 200, imageCropMode: ImageCropMode.Max))" class="inline-block" alt="@(store.Name)" /></a>
+                }
+                else if (!string.IsNullOrWhiteSpace(store.LogoImageUrl))
+                {
+                    <a href="/"><img src="@Html.Raw(store.LogoImageUrl.GetCropUrl(200, 200, imageCropMode: ImageCropMode.Max))" class="inline-block" alt="@(store.Name)" /></a>
                 }
                 else
                 {
@@ -157,6 +170,10 @@
                         {
                             <a href="/"><img src="@Html.Raw(Url.GetCropUrl(checkoutPage.Value<IPublishedContent>("uccStoreLogo"), 200, 100, imageCropMode: ImageCropMode.Max))" class="inline-block" alt="@(store.Name)" /></a>
 
+                        }
+                        else if (!string.IsNullOrWhiteSpace(store.LogoImageUrl))
+                        {
+                            <a href="/"><img src="@Html.Raw(store.LogoImageUrl.GetCropUrl(200, 100, imageCropMode: ImageCropMode.Max))" class="inline-block" alt="@(store.Name)" /></a>
                         }
                         else
                         {

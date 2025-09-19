@@ -194,6 +194,20 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     x.Name = "Hide from Navigation";
                     x.Description = "Hide the checkout page from the sites main navigation.";
                     x.SortOrder = 90;
+                }),
+                CreatePropertyType(await booleanDataType.Value, x =>
+                {
+                    x.Alias = "uccRequireLogin";
+                    x.Name = "Require Login";
+                    x.Description = "Customer is required to login before proceeding with the checkout.";
+                    x.SortOrder = 100;
+                }),
+                CreatePropertyType(await contentPickerDataType.Value, x =>
+                {
+                    x.Alias = "uccLoginPage";
+                    x.Name = "Login Page";
+                    x.Description = "The page on the site containing the customer portal login.";
+                    x.SortOrder = 110;
                 })
             ];
 

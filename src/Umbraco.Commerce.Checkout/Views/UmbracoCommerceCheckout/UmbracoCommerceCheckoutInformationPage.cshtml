@@ -1,4 +1,5 @@
 @using System.Text.Json
+@using Umbraco.Commerce.Checkout.Extensions
 @inherits UmbracoViewPage
 @{
     Layout = "UmbracoCommerceCheckoutLayout.cshtml";
@@ -6,6 +7,11 @@
     var store = Model.GetStore();
 
     var currentOrder = await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id);
+    var orderPropertyConfig = await UmbracoCommerceApi.Instance.GetOrderPropertyConfigAsync(store.Alias);
+
+    var customer = currentOrder.GetCustomer(orderPropertyConfig);
+    var billingAddress = currentOrder.GetBillingAddress(orderPropertyConfig);
+    var shippingAddress = currentOrder.GetShippingAddress(orderPropertyConfig);
 
     var countries = await UmbracoCommerceApi.Instance.GetCountriesAsync(store.Id);
 
@@ -43,7 +49,7 @@
 
     <h3 class="text-xl font-medium mb-4">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.ContactInformation", "Contact Information")</h3>
     <input name="email" type="email" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Email", "Email")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-           value="@(currentOrder.CustomerInfo.Email)" required />
+           value="@(customer.Email ?? currentOrder.CustomerInfo.Email)" required />
     <label class="flex items-center mb-2  cursor-pointer">
         <input name="marketingOptIn" type="checkbox" value="true" class="mr-2" @Html.Raw(currentOrder.Properties["marketingOptIn"] == "1" ? "checked=\"checked\"" : "") /> @Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.MarketingOptIn", "Keep me up to date on news and exclusive offers")
     </label>
@@ -52,17 +58,17 @@
 
     <div class="flex -mx-1">
         <input name="billingAddress.Firstname" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.FirstName", "First Name")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full"
-               value="@(currentOrder.CustomerInfo.FirstName)" required />
+               value="@(customer.FirstName ?? currentOrder.CustomerInfo.FirstName)" required />
         <input name="billingAddress.Lastname" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.LastName", "Last Name")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full"
-               value="@(currentOrder.CustomerInfo.LastName)" required />
+               value="@(customer.LastName ??currentOrder.CustomerInfo.LastName)" required />
     </div>
 
     <input name="billingAddress.Line1" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Address1", "Address (Line 1)")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-           value="@(currentOrder.Properties["billingAddressLine1"])" required />
+           value="@(billingAddress.AddressLine1 ?? currentOrder.Properties["billingAddressLine1"])" required />
     <input name="billingAddress.Line2" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Address2", "Address (Line 2)")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-           value="@(currentOrder.Properties["billingAddressLine2"])" />
+           value="@(billingAddress.AddressLine2 ?? currentOrder.Properties["billingAddressLine2"])" />
     <input name="billingAddress.City" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.City", "City")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-           value="@(currentOrder.Properties["billingCity"])" required />
+           value="@(billingAddress.City ?? currentOrder.Properties["billingCity"])" required />
 
     <div class="flex -mx-1">
         <select name="billingAddress.Country" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full" required>
@@ -82,10 +88,10 @@
         <select name="billingAddress.Region" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full disabled:hidden"
                 data-value="@currentOrder.PaymentInfo.RegionId" data-placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.SelectRegion", "-- Select a Region --")" required disabled></select>
         <input name="billingAddress.ZipCode" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.ZipCode", "Postcode")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full"
-               value="@(currentOrder.Properties["billingZipCode"])" required />
+               value="@(billingAddress.ZipCode ?? currentOrder.Properties["billingZipCode"])" required />
     </div>
     <input name="billingAddress.Telephone" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Telephone", "Phone")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-           value="@(currentOrder.Properties["billingTelephone"])" />
+           value="@(customer.Telephone ?? currentOrder.Properties["billingTelephone"])" />
 
     if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
     {
@@ -99,17 +105,17 @@
 
             <div class="flex -mx-1">
                 <input name="shippingAddress.Firstname" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.FirstName", "First Name")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full"
-                       value="@(currentOrder.Properties["shippingFirstName"])" required />
+                       value="@(customer.FirstName ?? currentOrder.Properties["shippingFirstName"])" required />
                 <input name="shippingAddress.Lastname" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.LastName", "Last Name")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full"
-                       value="@(currentOrder.Properties["shippingLastName"])" required />
+                       value="@(customer.LastName ?? currentOrder.Properties["shippingLastName"])" required />
             </div>
 
             <input name="shippingAddress.Line1" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Address1", "Address (Line 1)")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-                   value="@(currentOrder.Properties["shippingAddressLine1"])" required />
+                   value="@(shippingAddress.AddressLine1 ?? currentOrder.Properties["shippingAddressLine1"])" required />
             <input name="shippingAddress.Line2" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Address2", "Address (Line 2)")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-                   value="@(currentOrder.Properties["shippingAddressLine2"])" />
+                   value="@(shippingAddress.AddressLine2 ?? currentOrder.Properties["shippingAddressLine2"])" />
             <input name="shippingAddress.City" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.City", "City")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-                   value="@(currentOrder.Properties["shippingCity"])" required />
+                   value="@(shippingAddress.City ?? currentOrder.Properties["shippingCity"])" required />
 
             <div class="flex -mx-1">
                 <select name="shippingAddress.Country" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full" required>
@@ -129,10 +135,10 @@
                 <select name="shippingAddress.Region" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full disabled:hidden"
                         data-value="@currentOrder.ShippingInfo.RegionId" data-placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.SelectRegion", "-- Select a Region --")" required disabled></select>
                 <input name="shippingAddress.ZipCode" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.ZipCode", "Postcode")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 mx-1 w-full"
-                       value="@(currentOrder.Properties["shippingZipCode"])" required />
+                       value="@(shippingAddress.ZipCode ?? currentOrder.Properties["shippingZipCode"])" required />
             </div>
             <input name="shippingAddress.Telephone" type="text" placeholder="@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.Information.Telephone", "Phone")" class="block placeholder-gray-700 border border-gray-300 rounded py-2 px-4 mb-2 w-full"
-                   value="@(currentOrder.Properties["shippingTelephone"])" />
+                   value="@(customer.Telephone ?? currentOrder.Properties["shippingTelephone"])" />
 
         </div>
     }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -40,8 +41,6 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
 
         protected async Task<bool> IsValidCartAsync()
         {
-            ArgumentNullException.ThrowIfNull(CurrentPage);
-
             StoreReadOnly store = CurrentPage.GetStore();
             OrderReadOnly order = !IsConfirmationPageType(CurrentPage)
                 ? await UmbracoCommerceApi.Instance.GetCurrentOrderAsync(store.Id)
@@ -53,6 +52,14 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             }
 
             return true;
+        }
+
+        protected bool IsLoginRequired(out string loginPageUrl)
+        {
+            IPublishedContent checkoutPage = CurrentPage.GetCheckoutPage();
+            IPublishedContent loginPage = CurrentPage.GetLoginPage();
+            loginPageUrl = loginPage?.Url(Thread.CurrentThread.CurrentCulture.Name) ?? string.Empty;
+            return checkoutPage?.Value<bool>("uccRequireLogin") ?? false;
         }
 
         private static bool IsConfirmationPageType(IPublishedContent node)

@@ -30,10 +30,25 @@ public static class CustomerExtensions
         // This extension method should not be used in a context where order is null.
         ArgumentNullException.ThrowIfNull(order);
 
-        return new CustomerAddress(
-            order.Properties[orderPropertyConfig.Shipping.AddressLine1.Alias],
-            order.Properties[orderPropertyConfig.Shipping.AddressLine2.Alias],
-            order.Properties[orderPropertyConfig.Shipping.City.Alias],
-            order.Properties[orderPropertyConfig.Shipping.ZipCode.Alias]);
+        return order.Properties["shippingSameAsBilling"] == "1"
+            ? order.GetBillingAddress(orderPropertyConfig)
+            : new CustomerAddress(
+                order.Properties[orderPropertyConfig.Shipping.AddressLine1.Alias],
+                order.Properties[orderPropertyConfig.Shipping.AddressLine2.Alias],
+                order.Properties[orderPropertyConfig.Shipping.City.Alias],
+                order.Properties[orderPropertyConfig.Shipping.ZipCode.Alias]);
     }
+
+    /// <summary>
+    /// Returns the current string value if not null or whitespace, otherwise returns the fallback value or an empty string.
+    /// </summary>
+    /// <param name="value">The original string value.</param>
+    /// <param name="fallbackValue">The string value for fallback.</param>
+    /// <returns></returns>
+    public static string WithFallbackValue(this string value, string fallbackValue) =>
+        string.IsNullOrWhiteSpace(value)
+            ? string.IsNullOrEmpty(fallbackValue)
+                ? string.Empty
+                : fallbackValue
+            : value;
 }

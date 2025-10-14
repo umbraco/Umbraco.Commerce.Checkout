@@ -30,6 +30,11 @@ namespace Umbraco.Commerce.Checkout.Web
             return GetCheckoutPage(content).Value<IPublishedContent>("uccBackPage")!;
         }
 
+        public static IPublishedContent GetLoginPage(this IPublishedContent content)
+        {
+            return GetCheckoutPage(content).Value<IPublishedContent>("uccLoginPage")!;
+        }
+
         public static string GetThemeColor(this IPublishedContent content)
         {
             // Check if the checkout page has a custom theme color set

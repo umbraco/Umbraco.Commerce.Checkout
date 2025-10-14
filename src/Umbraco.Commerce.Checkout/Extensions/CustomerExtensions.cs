@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Umbraco.Commerce.Checkout.Models;
 using Umbraco.Commerce.Core.Models;
 
@@ -45,10 +46,33 @@ public static class CustomerExtensions
     /// <param name="value">The original string value.</param>
     /// <param name="fallbackValue">The string value for fallback.</param>
     /// <returns></returns>
-    public static string WithFallbackValue(this string value, string fallbackValue) =>
+    public static string GetPropertyValueOrFallback(this string value, string fallbackValue) =>
         string.IsNullOrWhiteSpace(value)
             ? string.IsNullOrEmpty(fallbackValue)
                 ? string.Empty
                 : fallbackValue
             : value;
+
+    /// <summary>
+    /// Returns the property value if exists, otherwise returns the fallback value or an empty string. 
+    /// </summary>
+    /// <param name="properties">The properties dictionary.</param>
+    /// <param name="key">The looked up record key.</param>
+    /// <param name="fallbackValue">The string value for fallback</param>
+    /// <returns></returns>
+    public static string GetPropertyValueOrFallback(this IReadOnlyDictionary<string, PropertyValue> properties, string key, string fallbackValue)
+    {
+        if (properties is null || !properties.ContainsKey(key))
+        {
+            return string.IsNullOrEmpty(fallbackValue) ? string.Empty : fallbackValue;
+        }
+
+        var propertyRecord = properties[key];
+        if (propertyRecord is null)
+        {
+            return string.IsNullOrEmpty(fallbackValue) ? string.Empty : fallbackValue;
+        }
+
+        return propertyRecord.Value.GetPropertyValueOrFallback(fallbackValue);
+    }
 }

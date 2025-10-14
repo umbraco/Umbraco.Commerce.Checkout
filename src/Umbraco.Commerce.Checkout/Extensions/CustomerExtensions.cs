@@ -46,9 +46,9 @@ public static class CustomerExtensions
     /// <param name="value">The original string value.</param>
     /// <param name="fallbackValue">The string value for fallback.</param>
     /// <returns></returns>
-    public static string GetPropertyValueOrFallback(this string value, string fallbackValue) =>
+    public static string ValueOrFallback(this string value, string fallbackValue) =>
         string.IsNullOrWhiteSpace(value)
-            ? string.IsNullOrEmpty(fallbackValue)
+            ? string.IsNullOrWhiteSpace(fallbackValue)
                 ? string.Empty
                 : fallbackValue
             : value;
@@ -60,19 +60,19 @@ public static class CustomerExtensions
     /// <param name="key">The looked up record key.</param>
     /// <param name="fallbackValue">The string value for fallback</param>
     /// <returns></returns>
-    public static string GetPropertyValueOrFallback(this IReadOnlyDictionary<string, PropertyValue> properties, string key, string fallbackValue)
+    public static string ValueOrFallback(this IReadOnlyDictionary<string, PropertyValue> properties, string key, string fallbackValue)
     {
         if (properties is null || !properties.ContainsKey(key))
         {
-            return string.IsNullOrEmpty(fallbackValue) ? string.Empty : fallbackValue;
+            return string.IsNullOrWhiteSpace(fallbackValue) ? string.Empty : fallbackValue;
         }
 
         var propertyRecord = properties[key];
         if (propertyRecord is null)
         {
-            return string.IsNullOrEmpty(fallbackValue) ? string.Empty : fallbackValue;
+            return string.IsNullOrWhiteSpace(fallbackValue) ? string.Empty : fallbackValue;
         }
 
-        return propertyRecord.Value.GetPropertyValueOrFallback(fallbackValue);
+        return propertyRecord.Value.ValueOrFallback(fallbackValue);
     }
 }

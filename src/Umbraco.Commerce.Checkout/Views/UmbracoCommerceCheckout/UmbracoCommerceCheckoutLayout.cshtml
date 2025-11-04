@@ -185,7 +185,7 @@
                         <ul class="flex justify-center">
                             @{
                                 var passedStep = false;
-                                foreach (var item in checkoutPage.Children
+                                foreach (var item in checkoutPage.Children()
                                 .Where(x => checkoutPage.Value<bool>("uccCollectShippingInfo") || x.Value<string>("uccStepType") != "ShippingMethod")
                                 .Select((s, i) => new { Step = s, Index = i }))
                                 {

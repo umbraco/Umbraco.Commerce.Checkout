@@ -54,7 +54,7 @@ namespace Umbraco.Commerce.Checkout.Web
 
         public static IPublishedContent GetPreviousPage(this IPublishedContent content)
         {
-            return content.Parent.Children.TakeWhile(x => !x.Id.Equals(content.Id)).LastOrDefault();
+            return content.Parent().Children().TakeWhile(x => !x.Id.Equals(content.Id)).LastOrDefault();
         }
 
         public static IPublishedContent? GetPreviousStepPage(this IPublishedContent content)
@@ -82,7 +82,7 @@ namespace Umbraco.Commerce.Checkout.Web
 
         public static IPublishedContent GetNextPage(this IPublishedContent content)
         {
-            return content.Parent.Children.SkipWhile(x => !x.Id.Equals(content.Id)).Skip(1).FirstOrDefault();
+            return content.Parent().Children().SkipWhile(x => !x.Id.Equals(content.Id)).Skip(1).FirstOrDefault();
         }
 
         public static IPublishedContent? GetNextStepPage(this IPublishedContent content)

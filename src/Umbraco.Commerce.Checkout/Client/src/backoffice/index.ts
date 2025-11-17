@@ -2,10 +2,9 @@ import type { UmbEntryPointOnInit } from '@umbraco-cms/backoffice/extension-api'
 
 import { UMB_AUTH_CONTEXT } from '@umbraco-cms/backoffice/auth';
 import { manifests as dashboardManifest } from './dashboards/manifest';
-import { ManifestTypes } from '@umbraco-cms/backoffice/extension-registry';
 import { OpenApiConfig } from './apis/install.api';
 
-const manifests: Array<ManifestTypes> = [
+const manifests: Array<UmbExtensionManifest> = [
     ...dashboardManifest,
 ];
 

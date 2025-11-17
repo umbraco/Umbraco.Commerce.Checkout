@@ -14,10 +14,40 @@
     }
 
     var uccStoreLogoUrl = checkoutPage.Value<IPublishedContent>("uccStoreLogo")?.Url();
+
+    if (string.IsNullOrWhiteSpace(uccStoreLogoUrl))
+    {
+        // Fallback to the store logo if the checkout page logo is not set
+        uccStoreLogoUrl = store.LogoImageUrl;
+    }
+
+    if (!string.IsNullOrWhiteSpace(uccStoreLogoUrl) && !uccStoreLogoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+    {
+        // Ensure the logo URL is absolute
+        uccStoreLogoUrl = BaseUrl + uccStoreLogoUrl;
+    }
+
     var uccStoreTsAndCsUrl = checkoutPage.Value<IPublishedContent>("uccTermsAndConditionsPage")?.Url();
     var uccStorePrivacyPolicyUrl = checkoutPage.Value<IPublishedContent>("uccPrivacyPolicyPage")?.Url();
+
     var uccStoreAddress = checkoutPage.Value<string>("uccStoreAddress");
-    var uccThemeColor = checkoutPage.Value<string>("uccThemeColor", defaultValue: "000000");
+    if (string.IsNullOrWhiteSpace(uccStoreAddress) && store.DefaultLocationId.HasValue)
+    {
+        // If the store address is not set, we can try to get it from the default location
+        var location = await UmbracoCommerceApi.GetLocationAsync(store.DefaultLocationId.Value);
+        if (location != null)
+        {
+            uccStoreAddress = $"{location.AddressLine1}, {location.City}, {location.ZipCode}";
+        }
+    }
+
+    var uccThemeColor = checkoutPage.Value<string>("uccThemeColor");
+
+    if (string.IsNullOrWhiteSpace(uccThemeColor))
+    {
+        // Fallback to the store theme color if the checkout page theme color is not set
+        uccThemeColor = store.ThemeColor ?? "#000000";
+    }
 }
 <style type="text/css">
     #ucc, #ucc td, #ucc p {
@@ -42,15 +72,15 @@
 
                                 @if (!string.IsNullOrWhiteSpace(uccStoreLogoUrl))
                                 {
-                                    <a href="@(BaseUrl)" target="_blank"><img src="@Html.Raw(BaseUrl + uccStoreLogoUrl.GetCropUrl(200, 100, imageCropMode: ImageCropMode.Max))" alt="@(store.Name)" border="0" /></a>
+                                    <a href="@(BaseUrl)" target="_blank"><img src="@Html.Raw(uccStoreLogoUrl.GetCropUrl(200, 100, imageCropMode: ImageCropMode.Max))" alt="@(store.Name)" border="0" /></a>
                                 }
                                 else
                                 {
-                                    <h1 class="margin: 0 0 20px; font-size: 30px; line-height: 38px; color: ##000;"><a href="@(BaseUrl)" style="color: #000;" target="_blank">@(store.Name)</a></h1>
+                                    <h1 class="margin: 0 0 20px; font-size: 30px; line-height: 38px; color: #000;"><a href="@(BaseUrl)" style="color: #000;" target="_blank">@(store.Name)</a></h1>
                                 }
 
                                 <hr style="border: 0; height: 1px; background: #ebebe9; margin: 20px 0;" />
-                                <h2 style="margin: 0 0 20px; font-size: 20px; line-height: 28px; color: #@(uccThemeColor);">Order Error - #@(Model.OrderNumber)</h2>
+                                <h2 style="margin: 0 0 20px; font-size: 20px; line-height: 28px; color: @(uccThemeColor);">Order Error - #@(Model.OrderNumber)</h2>
                                 <p>
                                     There is a problem with your payment for order <strong>@Model.OrderNumber</strong>.
                                 </p>
@@ -64,7 +94,7 @@
 
                             <hr style="border: 0; height: 1px; background: #ebebe9; margin: 20px 0;" />
                             <p style="text-align: center;">
-                                <a href="@(BaseUrl + uccStoreTsAndCsUrl)" target="_blank" style="color: #@(uccThemeColor);">Terms of Service</a> | <a href="@(BaseUrl + uccStorePrivacyPolicyUrl)" target="_blank" style="color: #@(uccThemeColor);">Privacy Policy</a>
+                                <a href="@(BaseUrl + uccStoreTsAndCsUrl)" target="_blank" style="color: @(uccThemeColor);">Terms of Service</a> | <a href="@(BaseUrl + uccStorePrivacyPolicyUrl)" target="_blank" style="color: @(uccThemeColor);">Privacy Policy</a>
                             </p>
                             <p style="text-align: center; margin-bottom: 0;">@(store.Name), @(uccStoreAddress)</p>
 

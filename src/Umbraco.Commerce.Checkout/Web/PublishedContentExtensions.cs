@@ -30,16 +30,26 @@ namespace Umbraco.Commerce.Checkout.Web
             return GetCheckoutPage(content).Value<IPublishedContent>("uccBackPage")!;
         }
 
+        public static IPublishedContent GetLoginPage(this IPublishedContent content)
+        {
+            return GetCheckoutPage(content).Value<IPublishedContent>("uccLoginPage")!;
+        }
+
         public static string GetThemeColor(this IPublishedContent content)
         {
-            string themeColor = GetCheckoutPage(content).Value("uccThemeColor", defaultValue: "#000000")!.TrimStart('#');
-
-            if (UmbracoCommerceCheckoutConstants.ColorMap.TryGetValue(themeColor, out string? value))
+            // Check if the checkout page has a custom theme color set
+            string? themeColor = GetCheckoutPage(content).Value<string>("uccThemeColor")?.TrimStart('#');
+            if (!string.IsNullOrWhiteSpace(themeColor))
             {
-                return value;
+                return themeColor;
             }
 
-            return UmbracoCommerceCheckoutConstants.ColorMap.First().Value;
+            // If not, fallback to the store's theme color, or black if that's not set
+            var store = content.GetStore();
+            var storeThemeColor = store.ThemeColor;
+            return !string.IsNullOrWhiteSpace(storeThemeColor)
+                ? storeThemeColor
+                : "#000000";
         }
 
         public static IPublishedContent GetPreviousPage(this IPublishedContent content)

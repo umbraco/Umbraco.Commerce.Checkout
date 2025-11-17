@@ -2,6 +2,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Logging;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Commerce.Core.Api;
+using Umbraco.Commerce.Extensions;
 using Umbraco.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Web.Controllers
@@ -21,6 +24,14 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
 
         public override async Task<IActionResult> Index()
         {
+            // Check if login is required
+            if (IsLoginRequired(out string loginPageUrl) && (!User.Identity?.IsAuthenticated ?? false))
+            {
+                return string.IsNullOrEmpty(loginPageUrl)
+                    ? Unauthorized()
+                    : Redirect(loginPageUrl);
+            }
+
             // Check the cart is valid before continuing
             if (!await IsValidCartAsync())
             {

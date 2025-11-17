@@ -40,11 +40,8 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
             // Setup lazy data types
             var textstringDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.TextstringGuid));
-            var textareaDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.TextareaGuid));
             var booleanDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.CheckboxGuid));
             var contentPickerDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.ContentPickerGuid));
-            var imagePickerDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.MediaPicker3SingleImageGuid));
-            var themeColorPickerDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.ThemeColorPickerGuid));
             var stepPickerDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.StepPickerGuid));
 
             // Checkout content type folder
@@ -151,32 +148,11 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
             // Move to the dedicated folder
             _logger.LogInformation("Moving checkout step document types to the correct folder.");
-            _contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
+            await _contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Checkout Page
             PropertyType[] checkoutPageProps =
             [
-                CreatePropertyType(await imagePickerDataType.Value, x =>
-                {
-                    x.Alias = "uccStoreLogo";
-                    x.Name = "Store Logo";
-                    x.Description = "A logo image for the store to appear at the top of the checkout screens and order emails.";
-                    x.SortOrder = 10;
-                }),
-                CreatePropertyType(await textstringDataType.Value, x =>
-                {
-                    x.Alias = "uccStoreAddress";
-                    x.Name = "Store Address";
-                    x.Description = "The address of the web store to appear in the footer of order emails.";
-                    x.SortOrder = 20;
-                }),
-                CreatePropertyType(await themeColorPickerDataType.Value, x =>
-                {
-                    x.Alias = "uccThemeColor";
-                    x.Name = "Theme Color";
-                    x.Description = "The theme color to use for colored elements of the checkout pages.";
-                    x.SortOrder = 30;
-                }),
                 CreatePropertyType(await booleanDataType.Value, x =>
                 {
                     x.Alias = "uccCollectShippingInfo";
@@ -218,6 +194,20 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     x.Name = "Hide from Navigation";
                     x.Description = "Hide the checkout page from the sites main navigation.";
                     x.SortOrder = 90;
+                }),
+                CreatePropertyType(await booleanDataType.Value, x =>
+                {
+                    x.Alias = "uccRequireLogin";
+                    x.Name = "Require Login";
+                    x.Description = "Customer is required to login before proceeding with the checkout.";
+                    x.SortOrder = 100;
+                }),
+                CreatePropertyType(await contentPickerDataType.Value, x =>
+                {
+                    x.Alias = "uccLoginPage";
+                    x.Name = "Login Page";
+                    x.Description = "The page on the site containing the customer portal login.";
+                    x.SortOrder = 110;
                 })
             ];
 

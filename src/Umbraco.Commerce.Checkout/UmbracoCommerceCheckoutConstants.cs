@@ -39,7 +39,9 @@ namespace Umbraco.Commerce.Checkout
         {
             public static class Guids
             {
+                [Obsolete("No longer used. Will be removed in v18.")]
                 public const string ThemeColorPicker = "46322397-3b7b-4d53-a5db-a1b17553d397";
+                [Obsolete("No longer used. Will be removed in v18.")]
                 public static readonly Guid ThemeColorPickerGuid = new Guid(ThemeColorPicker);
 
                 public const string StepPicker = "654a2147-2559-4b3f-93ee-a6925f45c173";

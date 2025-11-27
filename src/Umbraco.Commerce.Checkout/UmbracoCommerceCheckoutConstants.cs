@@ -12,7 +12,7 @@ namespace Umbraco.Commerce.Checkout
         }
 
 #pragma warning disable IDE1006 // Naming Styles
-        public static IReadOnlyDictionary<string, string> ColorMap = new Dictionary<string, string>
+        public static readonly IReadOnlyDictionary<string, string> ColorMap = new Dictionary<string, string>
         {
             { "000000", "black" },
             { "ef4444", "red-500" },
@@ -27,11 +27,21 @@ namespace Umbraco.Commerce.Checkout
         };
 #pragma warning restore IDE1006 // Naming Styles
 
+        public static class RelationTypes
+        {
+            public static class Aliases
+            {
+                public const string StoreCheckout = "uccStoreCheckout";
+            }
+        }
+
         public static class DataTypes
         {
             public static class Guids
             {
+                [Obsolete("No longer used. Will be removed in v18.")]
                 public const string ThemeColorPicker = "46322397-3b7b-4d53-a5db-a1b17553d397";
+                [Obsolete("No longer used. Will be removed in v18.")]
                 public static readonly Guid ThemeColorPickerGuid = new Guid(ThemeColorPicker);
 
                 public const string StepPicker = "654a2147-2559-4b3f-93ee-a6925f45c173";
@@ -59,13 +69,13 @@ namespace Umbraco.Commerce.Checkout
             public static class Guids
             {
                 public const string BasePage = "55f4b88e-69b6-45a4-bc4f-d48f35f6b904";
-                public static readonly Guid BasePageGuid = new Guid(BasePage);
+                public static readonly Guid BasePageGuid = new(BasePage);
 
                 public const string CheckoutPage = "e5e809cf-f3e5-4bb8-b7bb-c67c8303c2f4";
-                public static readonly Guid CheckoutPageGuid = new Guid(CheckoutPage);
+                public static readonly Guid CheckoutPageGuid = new(CheckoutPage);
 
                 public const string CheckoutStepPage = "d9384576-e6a8-4ef2-8ca8-475ee6e7546d";
-                public static readonly Guid CheckoutStepPageGuid = new Guid(CheckoutStepPage);
+                public static readonly Guid CheckoutStepPageGuid = new(CheckoutStepPage);
             }
         }
     }

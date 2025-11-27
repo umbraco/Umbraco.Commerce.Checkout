@@ -6,6 +6,8 @@ namespace Umbraco.Commerce.Checkout.Web.Dtos
     {
         public Guid ShippingMethod { get; set; }
 
+        public string ShippingOptionId { get; set; }
+
         public Guid? NextStep { get; set; }
     }
 }

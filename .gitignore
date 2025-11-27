@@ -179,9 +179,6 @@ DocProject/Help/*.hhp
 DocProject/Help/Html2
 DocProject/Help/html
 
-# Click-Once directory
-publish/
-
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
@@ -305,8 +302,6 @@ node_modules/
 *.dsp
 
 # Visual Studio 6 technical files
-*.ncb
-*.aps
 
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
@@ -386,6 +381,7 @@ FodyWeavers.xsd
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+.vscode/
 
 # Local History for Visual Studio Code
 .history/
@@ -398,7 +394,9 @@ FodyWeavers.xsd
 *.msp
 
 # JetBrains Rider
+.idea
 *.sln.iml
+.idea/
 
 ##
 ## Visual studio for Mac
@@ -407,7 +405,6 @@ FodyWeavers.xsd
 
 # globs
 Makefile.in
-*.userprefs
 *.usertasks
 config.make
 config.status
@@ -467,11 +464,6 @@ ehthumbs_vista.db
 $RECYCLE.BIN/
 
 # Windows Installer files
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
 
 # Windows shortcuts
 *.lnk
@@ -479,3 +471,8 @@ $RECYCLE.BIN/
 ##
 ## Umbraco Commerce specific
 ##
+demos/*
+*.Old/
+*.local.sln
+packages.lock.json
+wwwroot

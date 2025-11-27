@@ -1,41 +1,39 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Common.Pipelines.Tasks;
 using Umbraco.Commerce.Core.Api;
 using Umbraco.Commerce.Core.Models;
+using Umbraco.Commerce.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask : PipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask(IUmbracoCommerceApi commerceApi)
+        : PipelineTaskWithTypedArgsBase<InstallPipelineArgs, InstallPipelineData>
     {
-        private readonly IUmbracoCommerceApi _commerceApi;
-
-        public CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask(IUmbracoCommerceApi commerceApi)
+        public override async Task<PipelineResult<InstallPipelineData>> ExecuteAsync(InstallPipelineArgs args, CancellationToken cancellationToken)
         {
-            _commerceApi = commerceApi;
-        }
-
-        public override PipelineResult<InstallPipelineContext> Execute(PipelineArgs<InstallPipelineContext> args)
-        {
-            _commerceApi.Uow.Execute(uow => 
-            {
-                if (!_commerceApi.PaymentMethodExists(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
+            await commerceApi.Uow.ExecuteAsync(
+                async uow =>
                 {
-                    var paymentMethod = PaymentMethod.Create(uow, args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue, "[Umbraco Commerce Checkout] Zero Value", "zeroValue");
+                    if (!await commerceApi.PaymentMethodExistsAsync(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
+                    {
+                        PaymentMethod paymentMethod = await PaymentMethod.CreateAsync(uow, args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue, "[Umbraco Commerce Checkout] Zero Value", "zeroValue");
 
-                    paymentMethod.SetSku("UCCZV01")
-                        .SetTaxClass(args.Model.Store.DefaultTaxClassId.Value)
-                        .AllowInCountry(args.Model.Store.DefaultCountryId.Value);
+                        await paymentMethod.SetSkuAsync("UCCZV01")
+                            .SetTaxClassAsync(args.Model.Store.DefaultTaxClassId!.Value)
+                            .AllowInCountryAsync(args.Model.Store.DefaultCountryId!.Value);
 
-                    // We need to set the Continue URL to the checkout confirmation page
-                    // but we create nodes as unpublished, thus without a URL so we'll
-                    // have to listen for the confirmation page being published and
-                    // sync it's URL accordingly
+                        // We need to set the Continue URL to the checkout confirmation page
+                        // but we create nodes as unpublished, thus without a URL so we'll
+                        // have to listen for the confirmation page being published and
+                        // sync it's URL accordingly
+                        await commerceApi.SavePaymentMethodAsync(paymentMethod, cancellationToken);
+                    }
 
-                    _commerceApi.SavePaymentMethod(paymentMethod);
-                }
-
-                uow.Complete();
-            });
+                    uow.Complete();
+                },
+                cancellationToken);
 
             return Ok();
         }

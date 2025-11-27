@@ -1,43 +1,41 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Persistence.Querying;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Commerce.Common.Pipelines;
 using Umbraco.Commerce.Common.Pipelines.Tasks;
-using System.Reflection;
-using System.Linq;
-using Umbraco.Cms.Core.Models;
-using Umbraco.Cms.Core.Scoping;
-using Umbraco.Cms.Core.Services;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutNodesTask : PipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutNodesTask(
+        IScopeProvider scopeProvider,
+        IContentTypeService contentTypeService,
+        IContentService contentService)
+        : PipelineTaskWithTypedArgsBase<InstallPipelineArgs, InstallPipelineData>
     {
-        private readonly IScopeProvider _scopeProvider;
-        private readonly IContentTypeService _contentTypeService;
-        private readonly IContentService _contentService;
-
-        public CreateUmbracoCommerceCheckoutNodesTask(IScopeProvider scopeProvider,
-            IContentTypeService contentTypeService,
-            IContentService contentService)
+        public override Task<PipelineResult<InstallPipelineData>> ExecuteAsync(InstallPipelineArgs args, CancellationToken cancellationToken)
         {
-            _scopeProvider = scopeProvider;
-            _contentTypeService = contentTypeService;
-            _contentService = contentService;
-        }
-
-        public override PipelineResult<InstallPipelineContext> Execute(PipelineArgs<InstallPipelineContext> args)
-        {
-            using (var scope = _scopeProvider.CreateScope())
+            using (IScope scope = scopeProvider.CreateScope())
             {
-                var uccCheckoutPageContenType = _contentTypeService.Get(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage);
-                var uccCheckoutStepPageContenType = _contentTypeService.Get(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage);
+                IContentType uccCheckoutPageContentType = contentTypeService.Get(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage)
+                    ?? throw new InvalidOperationException("Checkout Page Document Type is not found");
+                IContentType uccCheckoutStepPageContentType = contentTypeService.Get(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage)
+                    ?? throw new InvalidOperationException("Checkout Step Page Document Type is not found");
 
                 // Check to see if the checkout node already exists
-                var filter = scope.SqlContext.Query<IContent>().Where(x => x.ContentTypeId == uccCheckoutPageContenType.Id);
-                var childNodes = _contentService.GetPagedChildren(args.Model.SiteRootNodeId, 1, 1, out long totalRecords, filter);
-                
+                IQuery<IContent> filter = scope.SqlContext.Query<IContent>().Where(x => x.ContentTypeId == uccCheckoutPageContentType.Id);
+                IEnumerable<IContent> childNodes = contentService.GetPagedChildren(args.Model.SiteRootNodeId, 1, 1, out long totalRecords, filter);
+
                 if (totalRecords == 0)
                 {
                     // Create the checkout page
-                    var checkoutNode = _contentService.CreateAndSave("Checkout", args.Model.SiteRootNodeId,
+                    IContent checkoutNode = contentService.CreateAndSave(
+                        "Checkout",
+                        args.Model.SiteRootNodeId,
                         UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage);
 
                     // Create the checkout steps pages
@@ -53,18 +51,20 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             }
 
             // Continue the pipeline
-            return Ok();
+            return Task.FromResult(Ok());
         }
 
         private void CreateCheckoutStepPage(IContent parent, string name, string shortName, string stepType)
         {
-            var checkoutStepNode = _contentService.Create(name, parent.Id,
+            IContent checkoutStepNode = contentService.Create(
+                name,
+                parent.Id,
                 UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage);
 
             checkoutStepNode.SetValue("uccShortStepName", shortName);
             checkoutStepNode.SetValue("uccStepType", $"[\"{stepType}\"]");
 
-            _contentService.Save(checkoutStepNode);
+            contentService.Save(checkoutStepNode);
         }
     }
 }

@@ -1,22 +1,38 @@
 {
-    "name": "@umbraco/commerce-checkout",
-    "private": true,
-    "scripts": {
-        "build": "gulp build"
-    },
-    "engines": {
-        "node": ">=16.17",
-        "npm": ">=8.15"
-    },
-    "devDependencies": {
-        "autoprefixer": "^10.4.14",
-        "cssnano": "^6.0.1",
-        "gulp": "^4.0.2",
-        "gulp-concat": "^2.6.1",
-        "gulp-postcss": "^9.0.1",
-        "gulp-rename": "^2.0.0",
-        "minimist": "^1.2.8",
-        "tailwindcss": "^3.3.2"
-    },
-    "dependencies": {}
+  "name": "umbraco-commerce-checkout",
+  "version": "17.0.0",
+  "description": "A ready made checkout flow for Umbraco Commerce",
+  "main": "./src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch --mode development",
+    "lint": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@types/eslint__js": "^8.42.3",
+    "@umbraco-cms/backoffice": "17.0.0",
+    "autoprefixer": "^10.4.22",
+    "eslint": "^9.39.0",
+    "globals": "^16.5.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18",
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^7.2.2",
+    "vite-plugin-static-copy": "^3.1.4",
+    "vite-tsconfig-paths": "^5.1.4"
+  },
+  "overrides": {
+    "glob": "^11.0.4"
+  },
+  "upgradePolicy": {
+    "pinned": {
+      "tailwindcss": "Keep at v3.x - do not upgrade to v4"
+    }
+  },
+  "author": "",
+  "license": "MIT"
 }

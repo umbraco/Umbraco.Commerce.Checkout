@@ -14,26 +14,14 @@ using Umbraco.Commerce.Common.Pipelines.Tasks;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutDataTypesTask : PipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutDataTypesTask(
+        ILogger<CreateUmbracoCommerceCheckoutDataTypesTask> logger,
+        IDataTypeService dataTypeService,
+        PropertyEditorCollection propertyEditors,
+        IConfigurationEditorJsonSerializer configurationEditorJsonSerializer)
+        : PipelineTaskWithTypedArgsBase<InstallPipelineArgs, InstallPipelineData>
     {
-        private readonly ILogger<CreateUmbracoCommerceCheckoutDataTypesTask> _logger;
-        private readonly IDataTypeService _dataTypeService;
-        private readonly PropertyEditorCollection _propertyEditors;
-        private readonly IConfigurationEditorJsonSerializer _configurationEditorJsonSerializer;
-
-        public CreateUmbracoCommerceCheckoutDataTypesTask(
-            ILogger<CreateUmbracoCommerceCheckoutDataTypesTask> logger,
-            IDataTypeService dataTypeService,
-            PropertyEditorCollection propertyEditors,
-            IConfigurationEditorJsonSerializer configurationEditorJsonSerializer)
-        {
-            _logger = logger;
-            _dataTypeService = dataTypeService;
-            _propertyEditors = propertyEditors;
-            _configurationEditorJsonSerializer = configurationEditorJsonSerializer;
-        }
-
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
+        public override async Task<PipelineResult<InstallPipelineData>> ExecuteAsync(InstallPipelineArgs args, CancellationToken cancellationToken)
         {
             // Step Picker
             List<string> stepPickerItems = [
@@ -45,8 +33,8 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                 "Confirmation",
             ];
 
-            IDataType? currentStepPicker = await _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.StepPickerGuid);
-            if (_propertyEditors.TryGet(Constants.PropertyEditors.Aliases.DropDownListFlexible, out IDataEditor? ddlDataEditor))
+            IDataType? currentStepPicker = await dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.StepPickerGuid);
+            if (propertyEditors.TryGet(Constants.PropertyEditors.Aliases.DropDownListFlexible, out IDataEditor? ddlDataEditor))
             {
                 if (currentStepPicker == null)
                 {
@@ -64,13 +52,13 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                     Items = stepPickerItems,
                                     Multiple = false,
                                 },
-                                _configurationEditorJsonSerializer);
+                                configurationEditorJsonSerializer);
                     });
 
-                    Attempt<IDataType, DataTypeOperationStatus> createAttempt = await _dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
+                    Attempt<IDataType, DataTypeOperationStatus> createAttempt = await dataTypeService.CreateAsync(dataType, Constants.Security.SuperUserKey);
                     if (!createAttempt.Success)
                     {
-                        _logger.LogError(createAttempt.Exception, "Create Step Picker attempt status {AttemptStatus}.", createAttempt.Status);
+                        logger.LogError(createAttempt.Exception, "Create Step Picker attempt status {AttemptStatus}.", createAttempt.Status);
                         return Fail(createAttempt.Exception);
                     }
                 }
@@ -85,12 +73,12 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                                 Items = stepPickerItems,
                                 Multiple = false,
                             },
-                            _configurationEditorJsonSerializer);
+                            configurationEditorJsonSerializer);
 
-                    Attempt<IDataType, DataTypeOperationStatus> updateAttempt = await _dataTypeService.UpdateAsync(currentStepPicker, Constants.Security.SuperUserKey);
+                    Attempt<IDataType, DataTypeOperationStatus> updateAttempt = await dataTypeService.UpdateAsync(currentStepPicker, Constants.Security.SuperUserKey);
                     if (!updateAttempt.Success)
                     {
-                        _logger.LogError(updateAttempt.Exception, "Update step picker attempt status {AttemptStatus}.", updateAttempt.Status);
+                        logger.LogError(updateAttempt.Exception, "Update step picker attempt status {AttemptStatus}.", updateAttempt.Status);
                         return Fail(updateAttempt.Exception);
                     }
                 }
@@ -102,7 +90,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
         private DataType CreateDataType(IDataEditor dataEditor, Action<DataType> config)
         {
-            var dataType = new DataType(dataEditor, _configurationEditorJsonSerializer);
+            var dataType = new DataType(dataEditor, configurationEditorJsonSerializer);
 
             config.Invoke(dataType);
 

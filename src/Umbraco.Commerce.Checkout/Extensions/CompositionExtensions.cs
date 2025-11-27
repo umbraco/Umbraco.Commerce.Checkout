@@ -41,7 +41,7 @@ namespace Umbraco.Commerce.Checkout.Extensions
         public static IBuilder AddUmbracoCommerceInstallPipeline(this IBuilder builder)
         {
             IUmbracoCommerceBuilder commerceBuilder = builder.WithUmbracoCommerceBuilder();
-            commerceBuilder.WithPipeline<InstallAsyncPipelineTask, InstallPipelineContext>()
+            commerceBuilder.WithPipeline<InstallPipeline, InstallPipelineData>()
                 .Add<CreateUmbracoCommerceCheckoutDataTypesTask>()
                 .Add<CreateUmbracoCommerceCheckoutDocumentTypesTask>()
                 .Add<CreateUmbracoCommerceCheckoutNodesTask>()

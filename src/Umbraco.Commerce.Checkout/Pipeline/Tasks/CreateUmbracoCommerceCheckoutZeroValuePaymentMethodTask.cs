@@ -8,18 +8,15 @@ using Umbraco.Commerce.Extensions;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask : PipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask(IUmbracoCommerceApi commerceApi)
+        : PipelineTaskWithTypedArgsBase<InstallPipelineArgs, InstallPipelineData>
     {
-        private readonly IUmbracoCommerceApi _commerceApi;
-
-        public CreateUmbracoCommerceCheckoutZeroValuePaymentMethodTask(IUmbracoCommerceApi commerceApi) => _commerceApi = commerceApi;
-
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
+        public override async Task<PipelineResult<InstallPipelineData>> ExecuteAsync(InstallPipelineArgs args, CancellationToken cancellationToken)
         {
-            await _commerceApi.Uow.ExecuteAsync(
+            await commerceApi.Uow.ExecuteAsync(
                 async uow =>
                 {
-                    if (!await _commerceApi.PaymentMethodExistsAsync(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
+                    if (!await commerceApi.PaymentMethodExistsAsync(args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue))
                     {
                         PaymentMethod paymentMethod = await PaymentMethod.CreateAsync(uow, args.Model.Store.Id, UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue, "[Umbraco Commerce Checkout] Zero Value", "zeroValue");
 
@@ -31,7 +28,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                         // but we create nodes as unpublished, thus without a URL so we'll
                         // have to listen for the confirmation page being published and
                         // sync it's URL accordingly
-                        await _commerceApi.SavePaymentMethodAsync(paymentMethod, cancellationToken);
+                        await commerceApi.SavePaymentMethodAsync(paymentMethod, cancellationToken);
                     }
 
                     uow.Complete();

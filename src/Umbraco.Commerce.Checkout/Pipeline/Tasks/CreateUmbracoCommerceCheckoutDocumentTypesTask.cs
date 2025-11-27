@@ -12,45 +12,31 @@ using Umbraco.Commerce.Common.Pipelines.Tasks;
 
 namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 {
-    public class CreateUmbracoCommerceCheckoutDocumentTypesTask : PipelineTaskBase<InstallPipelineContext>
+    public class CreateUmbracoCommerceCheckoutDocumentTypesTask(
+        IContentTypeService contentTypeService,
+        IDataTypeService dataTypeService,
+        IShortStringHelper shortStringHelper,
+        IContentTypeContainerService contentTypeContainerService,
+        ILogger<CreateUmbracoCommerceCheckoutDocumentTypesTask> logger)
+        : PipelineTaskWithTypedArgsBase<InstallPipelineArgs, InstallPipelineData>
     {
-        private readonly IContentTypeService _contentTypeService;
-        private readonly IDataTypeService _dataTypeService;
-        private readonly IShortStringHelper _shortStringHelper;
-        private readonly IContentTypeContainerService _contentTypeContainerService;
-        private readonly ILogger<CreateUmbracoCommerceCheckoutDocumentTypesTask> _logger;
-
-        public CreateUmbracoCommerceCheckoutDocumentTypesTask(
-            IContentTypeService contentTypeService,
-            IDataTypeService dataTypeService,
-            IShortStringHelper shortStringHelper,
-            IContentTypeContainerService contentTypeContainerService,
-            ILogger<CreateUmbracoCommerceCheckoutDocumentTypesTask> logger)
+        public override async Task<PipelineResult<InstallPipelineData>> ExecuteAsync(InstallPipelineArgs args, CancellationToken cancellationToken)
         {
-            _contentTypeService = contentTypeService;
-            _dataTypeService = dataTypeService;
-            _shortStringHelper = shortStringHelper;
-            _contentTypeContainerService = contentTypeContainerService;
-            _logger = logger;
-        }
-
-        public override async Task<PipelineResult<InstallPipelineContext>> ExecuteAsync(PipelineArgs<InstallPipelineContext> args, CancellationToken cancellationToken)
-        {
-            _logger.LogInformation("Begin CreateUmbracoCommerceCheckoutDocumentTypesTask");
+            logger.LogInformation("Begin CreateUmbracoCommerceCheckoutDocumentTypesTask");
 
             // Setup lazy data types
-            var textstringDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.TextstringGuid));
-            var booleanDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.CheckboxGuid));
-            var contentPickerDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(Constants.DataTypes.Guids.ContentPickerGuid));
-            var stepPickerDataType = new Lazy<Task<IDataType?>>(() => _dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.StepPickerGuid));
+            var textstringDataType = new Lazy<Task<IDataType?>>(() => dataTypeService.GetAsync(Constants.DataTypes.Guids.TextstringGuid));
+            var booleanDataType = new Lazy<Task<IDataType?>>(() => dataTypeService.GetAsync(Constants.DataTypes.Guids.CheckboxGuid));
+            var contentPickerDataType = new Lazy<Task<IDataType?>>(() => dataTypeService.GetAsync(Constants.DataTypes.Guids.ContentPickerGuid));
+            var stepPickerDataType = new Lazy<Task<IDataType?>>(() => dataTypeService.GetAsync(UmbracoCommerceCheckoutConstants.DataTypes.Guids.StepPickerGuid));
 
             // Checkout content type folder
-            _logger.LogInformation("Create or update checkout document type folder");
-            EntityContainer? checkoutContentTypeFolder = await _contentTypeContainerService.GetAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.BasePageGuid);
+            logger.LogInformation("Create or update checkout document type folder");
+            EntityContainer? checkoutContentTypeFolder = await contentTypeContainerService.GetAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.BasePageGuid);
             if (checkoutContentTypeFolder == null)
             {
-                _logger.LogInformation("Checkout document type folder is not found, creating a new folder");
-                Attempt<EntityContainer?, EntityContainerOperationStatus> folderCreateAttempt = await _contentTypeContainerService.CreateAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.BasePageGuid, "[Umbraco Commerce Checkout] Page", null, Constants.Security.SuperUserKey);
+                logger.LogInformation("Checkout document type folder is not found, creating a new folder");
+                Attempt<EntityContainer?, EntityContainerOperationStatus> folderCreateAttempt = await contentTypeContainerService.CreateAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.BasePageGuid, "[Umbraco Commerce Checkout] Page", null, Constants.Security.SuperUserKey);
                 if (!folderCreateAttempt.Success)
                 {
                     throw new InvalidOperationException("Unable to create a folder to store checkout package content types");
@@ -78,11 +64,11 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                 })
             ];
 
-            _logger.LogInformation("Create or update checkout step page document type");
-            IContentType? checkoutStepPageContentType = await _contentTypeService.GetAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.CheckoutStepPageGuid);
+            logger.LogInformation("Create or update checkout step page document type");
+            IContentType? checkoutStepPageContentType = await contentTypeService.GetAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.CheckoutStepPageGuid);
             if (checkoutStepPageContentType == null)
             {
-                checkoutStepPageContentType = new ContentType(_shortStringHelper, -1)
+                checkoutStepPageContentType = new ContentType(shortStringHelper, -1)
                 {
                     Key = UmbracoCommerceCheckoutConstants.ContentTypes.Guids.CheckoutStepPageGuid,
                     Alias = UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage,
@@ -99,10 +85,10 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     ]),
                 };
 
-                Attempt<ContentTypeOperationStatus> createAttempt = await _contentTypeService.CreateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
+                Attempt<ContentTypeOperationStatus> createAttempt = await contentTypeService.CreateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
                 if (!createAttempt.Success)
                 {
-                    _logger.LogError(createAttempt.Exception, "Create checkout step page document type attempt status {AttemptStatus}.", createAttempt.Result);
+                    logger.LogError(createAttempt.Exception, "Create checkout step page document type attempt status {AttemptStatus}.", createAttempt.Result);
                     return Fail(createAttempt.Exception);
                 }
             }
@@ -137,18 +123,18 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
                 if (safeExisting)
                 {
-                    Attempt<ContentTypeOperationStatus> updateAttempt = await _contentTypeService.UpdateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
+                    Attempt<ContentTypeOperationStatus> updateAttempt = await contentTypeService.UpdateAsync(checkoutStepPageContentType, Constants.Security.SuperUserKey);
                     if (!updateAttempt.Success)
                     {
-                        _logger.LogError(updateAttempt.Exception, "Update checkout step page document type attempt status {AttemptStatus}.", updateAttempt.Result);
+                        logger.LogError(updateAttempt.Exception, "Update checkout step page document type attempt status {AttemptStatus}.", updateAttempt.Result);
                         return Fail(updateAttempt.Exception);
                     }
                 }
             }
 
             // Move to the dedicated folder
-            _logger.LogInformation("Moving checkout step document types to the correct folder.");
-            await _contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
+            logger.LogInformation("Moving checkout step document types to the correct folder.");
+            await contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Checkout Page
             PropertyType[] checkoutPageProps =
@@ -211,11 +197,11 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                 })
             ];
 
-            _logger.LogInformation("Create or update checkout page document type");
-            IContentType? checkoutPageContentType = await _contentTypeService.GetAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.CheckoutPageGuid);
+            logger.LogInformation("Create or update checkout page document type");
+            IContentType? checkoutPageContentType = await contentTypeService.GetAsync(UmbracoCommerceCheckoutConstants.ContentTypes.Guids.CheckoutPageGuid);
             if (checkoutPageContentType == null)
             {
-                checkoutPageContentType = new ContentType(_shortStringHelper, -1)
+                checkoutPageContentType = new ContentType(shortStringHelper, -1)
                 {
                     Key = UmbracoCommerceCheckoutConstants.ContentTypes.Guids.CheckoutPageGuid,
                     Alias = UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutPage,
@@ -235,10 +221,10 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                     ]),
                 };
 
-                Attempt<ContentTypeOperationStatus> createAttempt = await _contentTypeService.CreateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
+                Attempt<ContentTypeOperationStatus> createAttempt = await contentTypeService.CreateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
                 if (!createAttempt.Success)
                 {
-                    _logger.LogError(createAttempt.Exception, "Create checkout page attempt status {AttemptStatus}.", createAttempt.Result);
+                    logger.LogError(createAttempt.Exception, "Create checkout page attempt status {AttemptStatus}.", createAttempt.Result);
                     return Fail(createAttempt.Exception);
                 }
             }
@@ -273,17 +259,17 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
                 if (safeExisting)
                 {
-                    Attempt<ContentTypeOperationStatus> updateAttempt = await _contentTypeService.UpdateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
+                    Attempt<ContentTypeOperationStatus> updateAttempt = await contentTypeService.UpdateAsync(checkoutPageContentType, Constants.Security.SuperUserKey);
                     if (!updateAttempt.Success)
                     {
-                        _logger.LogError(updateAttempt.Exception, "Update checkout step page document type attempt status {AttemptStatus}.", updateAttempt.Result);
+                        logger.LogError(updateAttempt.Exception, "Update checkout step page document type attempt status {AttemptStatus}.", updateAttempt.Result);
                         return Fail(updateAttempt.Exception);
                     }
                 }
             }
 
             // Move to the dedicated folder
-            _contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
+            contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Continue the pipeline
             return Ok();
@@ -293,7 +279,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
         {
             ArgumentNullException.ThrowIfNull(dataType);
 
-            PropertyType propertyType = new(_shortStringHelper, dataType);
+            PropertyType propertyType = new(shortStringHelper, dataType);
 
             config.Invoke(propertyType);
 

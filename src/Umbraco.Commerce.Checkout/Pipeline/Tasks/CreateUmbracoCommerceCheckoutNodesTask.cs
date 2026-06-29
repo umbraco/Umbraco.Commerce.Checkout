@@ -26,9 +26,9 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
                 IContentType uccCheckoutStepPageContentType = contentTypeService.Get(UmbracoCommerceCheckoutConstants.ContentTypes.Aliases.CheckoutStepPage)
                     ?? throw new InvalidOperationException("Checkout Step Page Document Type is not found");
 
-                // Check to see if the checkout node already exists
+                // Check to see if the checkout node already exists (only the total count is used, so skip loading properties and templates)
                 IQuery<IContent> filter = scope.SqlContext.Query<IContent>().Where(x => x.ContentTypeId == uccCheckoutPageContentType.Id);
-                IEnumerable<IContent> childNodes = contentService.GetPagedChildren(args.Model.SiteRootNodeId, 1, 1, out long totalRecords, filter);
+                contentService.GetPagedChildren(args.Model.SiteRootNodeId, 1, 1, out long totalRecords, [], filter, null, false);
 
                 if (totalRecords == 0)
                 {

@@ -234,7 +234,7 @@
                                     </tr>
                                 }
 
-                                @if (paymentMethod != null && paymentMethod.Alias != UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue)
+                                @if (paymentMethod != null && paymentMethod.PaymentProviderAlias != "zeroValue")
                                 {
                                     <tr>
                                         <td style="vertical-align: top;">

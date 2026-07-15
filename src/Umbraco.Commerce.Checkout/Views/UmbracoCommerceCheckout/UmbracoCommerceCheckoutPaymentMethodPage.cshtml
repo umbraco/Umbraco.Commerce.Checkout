@@ -9,12 +9,12 @@
     var paymentCountry = currentOrder.PaymentInfo.CountryId.HasValue
         ? UmbracoCommerceApi.Instance.GetCountry(currentOrder.PaymentInfo.CountryId.Value)
         : null;
+
     var paymentRegion = currentOrder.PaymentInfo.RegionId.HasValue
         ? UmbracoCommerceApi.Instance.GetCountry(currentOrder.PaymentInfo.RegionId.Value)
         : null;
 
-    var paymentMethods = UmbracoCommerceApi.Instance.GetPaymentMethodsAllowedIn(currentOrder.PaymentInfo.CountryId.Value,
-        currentOrder.PaymentInfo.RegionId);
+    var paymentMethods = UmbracoCommerceApi.Instance.GetPaymentMethodsAllowedIn(currentOrder.PaymentInfo.CountryId.Value, currentOrder.PaymentInfo.RegionId);
 
     var currentPaymentMethodId = currentOrder.PaymentInfo.PaymentMethodId.HasValue
         ? currentOrder.PaymentInfo.PaymentMethodId.Value
@@ -24,9 +24,11 @@
                 ? paymentCountry.DefaultPaymentMethodId.Value
                 : paymentMethods.FirstOrDefault()?.Id;
 
-    var zeroValuePaymentMethod = paymentMethods.FirstOrDefault(x => x.Alias == UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue);
+    var zeroValuePaymentMethod = paymentMethods.FirstOrDefault(x => x.Alias == UmbracoCommerceCheckoutConstants.PaymentMethods.Aliases.ZeroValue)
+        ?? paymentMethods.FirstOrDefault(x => x.PaymentProviderAlias != "zeroValue");
 
     var checkoutPage = Model.GetCheckoutPage();
+
     var nextStepPage = Model.GetNextStepPage();
 }
 
@@ -39,10 +41,10 @@
     if (currentOrder.TransactionAmount.Value > 0 || zeroValuePaymentMethod == null)
     {
         <ul class="border border-gray-300 rounded">
-            @foreach (var item in paymentMethods.Where(x => zeroValuePaymentMethod == null || x.Alias != zeroValuePaymentMethod.Alias)
-               .Select((pm, i) => new { PaymentMethod = pm, Index = i }))
+            @foreach (var item in paymentMethods.Where(x => zeroValuePaymentMethod == null || x.Alias != zeroValuePaymentMethod.Alias).Select((pm, i) => new { PaymentMethod = pm, Index = i }))
             {
                 var fee = item.PaymentMethod.TryCalculateFee(currentOrder);
+
                 if (fee.Success)
                 {
                     <li class="border-gray-300 @(item.Index > 0 ? "border-t " : "")">

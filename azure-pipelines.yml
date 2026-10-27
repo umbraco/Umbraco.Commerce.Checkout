@@ -2,190 +2,62 @@ name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd
 
 trigger:
   branches:
-    include: 
-      - dev
+    include:
       - release/*
       - hotfix/*
-      - support/*
-      - feature/*
   tags:
     include:
       - release-*
 
+resources:
+  repositories:
+    - repository: build
+      type: github
+      name: umbraco/Umbraco.Build
+      endpoint: umbraco
+
 parameters:
-  - name: cache_npm
-    displayName: Cache NPM packages
+  - name: prerelease
+    displayName: Prerelease
+    type: string
+    default: auto
+    values:
+      - auto # Only release to MyGet on public releases, otherwise skip
+      - prerelease # Release to MyGet pre-release feed, regardless of release type
+      - nightly # Release to MyGet nightly feed, regardless of release type
+      - skip # Skip releasing to MyGet, regardless of release type
+  - name: release
+    displayName: Release
+    type: string
+    default: auto
+    values:
+      - auto # Only release to NuGet on public, stable releases, otherwise skip
+      - public # Release to NuGet, regardless of release type
+      - skip # Skip releasing to NuGet, regardless of release type
+  - name: sbom_generate
+    displayName: Generate SBOM
     type: boolean
-    default: true
-  - name: cache_nuget
-    displayName: Cache NuGet packages
-    type: boolean
-    default: false
+    default: false # SBOM is still generated for release/hotfix branches and release-* tags
 
-variables:
-  nodeVersion: 22.x
-  solution: Umbraco.Commerce.Checkout.sln
-  buildConfiguration: Release
-  DOTNET_NOLOGO: true
-  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
-
-stages: 
-  - stage: Build
-    variables:
-      NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
-      npm_config_cache: $(Pipeline.Workspace)/.npm_client
-    jobs:
-      - job: Build
-        variables:
-        - group: "dependency-track"
-        pool:
-          vmImage: ubuntu-latest
-        steps:
-          # Checkout source (avoid shallow clone to calculate version height)
-          - checkout: self
-            fetchDepth: 0
-
-          # Setup build environment
-          - task: NuGetAuthenticate@1
-            displayName: Authenticate NuGet
-
-          - task: NodeTool@0
-            displayName: Use Node.js $(nodeVersion)
-            inputs:
-              versionSpec: $(nodeVersion)
-
-          - task: UseDotNet@2
-            displayName: Use .NET SDK from global.json
-            inputs:
-              useGlobalJson: true
-
-          # Cache and restore NPM packages
-          - task: Cache@2
-            condition: ${{ parameters.cache_npm }}
-            displayName: Cache NPM packages
-            inputs:
-              key: 'npm | "$(Agent.OS)" | **/package-lock.json, !**/node_modules/**'
-              restoreKeys: |
-                npm | "$(Agent.OS)"
-                npm
-              path: $(npm_config_cache)
-          
-          - task: CmdLine@2
-            displayName: 'Install NPM packages'
-            inputs:
-              script: 'npm ci --no-fund --no-audit --prefer-offline'
-              workingDirectory: '$(Build.SourcesDirectory)/src/Umbraco.Commerce.Checkout/Client'
-  
-          - task: CmdLine@2
-            displayName: 'Build frontend'
-            inputs:
-              workingDirectory: $(Build.SourcesDirectory)/src/Umbraco.Commerce.Checkout/Client
-              script: 'npm run build'
-
-          # Cache and restore NuGet packages
-          - task: Cache@2
-            condition: ${{ parameters.cache_nuget }}
-            displayName: Cache NuGet packages
-            inputs:
-              key: 'nuget | "$(Agent.OS)" | **/packages.lock.json, !**/bin/**, !**/obj/**'
-              restoreKeys: |
-                nuget | "$(Agent.OS)"
-                nuget
-              path: $(NUGET_PACKAGES)
-
-          - script: dotnet restore $(solution) --locked-mode
-            displayName: Restore NuGet packages
-
-          # Build
-          - script: dotnet build $(solution) --configuration $(buildConfiguration) --no-restore -p:ContinuousIntegrationBuild=true
-            displayName: Run dotnet build
-
-          # Pack
-          - script: dotnet pack $(solution) --configuration $(buildConfiguration) --no-build --output $(Build.ArtifactStagingDirectory)/nupkg
-            displayName: Run dotnet pack
-
-          # Publish
-          - task: PublishPipelineArtifact@1
-            displayName: Publish NuGet packages
-            inputs:
-              targetPath: $(Build.ArtifactStagingDirectory)/nupkg
-              artifactName: nupkg
-
-          - task: PublishPipelineArtifact@1
-            displayName: Publish build output
-            inputs:
-              targetPath: $(Build.SourcesDirectory)
-              artifactName: build_output
-
-          # Generate/upload SBOM with cdxgen
-          - script: |
-              cd $(Build.SourcesDirectory)
-              npm install --global @cyclonedx/cdxgen
-            displayName: 'Install cdxgen'
-            continueOnError: true
-
-          - task: PowerShell@2
-            displayName: 'Generate & upload SBOM with cdxgen (pwsh)'
-            continueOnError: true
-            inputs:
-              targetType: 'inline'
-              pwsh: true
-              script: |
-                mkdir -Force "$(Build.ArtifactStagingDirectory)/bom"
-                Set-Location "$(Build.SourcesDirectory)"
-
-                # version
-                $VERSION = 'vUNKNOWN'
-                if (Test-Path 'version.json') {
-                  try {
-                    $rawVersion = (Get-Content 'version.json' -Raw | ConvertFrom-Json).version
-                  } catch {
-                    if ((Get-Content 'version.json' -Raw) -match '"version"\s*:\s*"([^"]+)"') {
-                      $rawVersion = $matches[1]
-                    }
-                  }
-
-                  if ($rawVersion) {
-                    # Extract major part (e.g. "1" from "1.2.3") and add "v" prefix
-                    if ($rawVersion -match '^(\d+)\.') {
-                      $VERSION = "v$($matches[1])"
-                    } elseif ($rawVersion -match '^\d+$') {
-                      $VERSION = "v$rawVersion"
-                    } else {
-                      $VERSION = "vUNKNOWN"
-                    }
-                  }
-                }
-
-                Write-Host "Project version: $VERSION"
-
-                # derive project name
-                $PROJECT_NAME = [System.IO.Path]::GetFileNameWithoutExtension("$(solution)")
-                Write-Host "Project name: $PROJECT_NAME"
-
-                # short debug (last 5 chars)
-                foreach ($name in 'DT_BASE_URL','DT_API_KEY') {
-                  $v = (Get-Item "Env:$name").Value
-                  if ($v) {
-                    $last = if ($v.Length -gt 5) { $v.Substring($v.Length-5) } else { $v }
-                    Write-Host "$name (last5): ...$last"
-                  } else {
-                    Write-Host "$name is empty"
-                  }
-                }
-
-                Write-Host 'Running cdxgen ...'
-                & cdxgen '--recurse' '--output' "$(Build.ArtifactStagingDirectory)/bom/bom.json" '--json-pretty' '--project-group' 'DXP' '--project-name' $PROJECT_NAME '--project-version' $VERSION '--server-url' $env:DT_BASE_URL '--api-key' $env:DT_API_KEY '--spec-version' 1.6
-            env:
-              DT_API_KEY: $(DT_API_KEY)
-              DT_BASE_URL: $(DT_BASE_URL)
-
-          - task: PublishPipelineArtifact@1
-            displayName: 'Publish SBOM Artifact'
-            continueOnError: true
-            inputs:
-              targetPath: $(Build.ArtifactStagingDirectory)/bom
-              artifactName: SBOM
-
+extends:
+  template: devops/templates/azure-pipelines-template.yml@build
+  parameters:
+    product_name: Umbraco.Commerce.Checkout
+    prerelease: ${{ parameters.prerelease }}
+    # Prerelease tags (e.g. release-18.1.0-rc.1) only go to MyGet, never NuGet.org
+    ${{ if and(eq(parameters.release, 'auto'), startsWith(variables['Build.SourceBranch'], 'refs/tags/release-'), contains(replace(variables['Build.SourceBranch'], 'refs/tags/release-', ''), '-')) }}:
+      release: skip
+    ${{ else }}:
+      release: ${{ parameters.release }}
+    run_tests: skip # No test projects
+    sbom_generate: ${{ parameters.sbom_generate }}
+    # Release/hotfix branch builds still run the license check, but only release-* tags upload, so
+    # Dependency-Track only lists released versions
+    sbom_upload: ${{ startsWith(variables['Build.SourceBranch'], 'refs/tags/release-') }}
+    sbom_dt_variable_group: dependency-track
+    # The client app is bundled into the NuGet package, so its npm dependencies ship too
+    sbom_npm_paths:
+      - src/Umbraco.Commerce.Checkout/Client
+    nuget_nightly_service_connection: Myget - Umbraco Nightly
+    nuget_prereleases_service_connection: Myget - Umbraco Prereleases
+    nuget_service_connection: Umbraco NuGet

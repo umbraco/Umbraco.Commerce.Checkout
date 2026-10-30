@@ -134,7 +134,11 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
 
             // Move to the dedicated folder
             logger.LogInformation("Moving checkout step document types to the correct folder.");
-            await contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
+            var checkoutStepPageContentTypeMoveAttempt = await contentTypeService.MoveAsync(checkoutStepPageContentType.Key, checkoutContentTypeFolder!.Key);
+            if (!checkoutStepPageContentTypeMoveAttempt.Success)
+            {
+                logger.LogWarning("Move checkout step page document type to the folder attempt status {AttemptStatus}.", checkoutStepPageContentTypeMoveAttempt.Result);
+            }
 
             // Checkout Page
             PropertyType[] checkoutPageProps =
@@ -269,7 +273,11 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             }
 
             // Move to the dedicated folder
-            await contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
+            var checkoutPageContentTypeMoveAttempt = await contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
+            if (!checkoutPageContentTypeMoveAttempt.Success)
+            {
+                logger.LogWarning("Move checkout page document type to the folder attempt status {AttemptStatus}.", checkoutPageContentTypeMoveAttempt.Result);
+            }
 
             // Continue the pipeline
             return Ok();

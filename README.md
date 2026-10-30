@@ -14,9 +14,9 @@ This package uses the same versioning strategy with Umbraco Commerce.
 
 ## Working locally
 To fork and build your own Commerce Checkout package, you will need:
-* .NET 8.0 SDK or newer
-* Umbraco 11.0.0 or newer
-* Umbraco Commerce 14.0.0 or newer
+* .NET 11 SDK (see `global.json`)
+* Umbraco 19.0.0 or newer
+* Umbraco Commerce 19.0.0 or newer
 * NodeJS 20+ for frontend development. Open `/src/Umbraco.Commerce.Checkout/Client` folder and run `npm i; npm run build`
 
 ## Raising an Issue

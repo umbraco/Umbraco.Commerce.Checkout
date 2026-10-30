@@ -10,6 +10,7 @@ using Umbraco.Cms.Core.Services.OperationStatus;
 using Umbraco.Cms.Infrastructure.Serialization;
 using Umbraco.Commerce.Checkout.Pipeline;
 using Umbraco.Commerce.Checkout.Pipeline.Tasks;
+using Umbraco.Commerce.Common.Pipelines;
 
 namespace Umbraco.Commerce.Checkout.Tests;
 
@@ -66,7 +67,9 @@ public class CreateUmbracoCommerceCheckoutDataTypesTaskTests
     {
         SetupExisting(null);
 
-        await _task.ExecuteAsync(new InstallPipelineArgs(new InstallPipelineData()), CancellationToken.None);
+        PipelineResult<InstallPipelineData> result = await _task.ExecuteAsync(new InstallPipelineArgs(new InstallPipelineData()), CancellationToken.None);
+
+        Assert.True(result.Success);
 
         Assert.NotNull(_created);
         Assert.Null(_updated);
@@ -92,7 +95,9 @@ public class CreateUmbracoCommerceCheckoutDataTypesTaskTests
         };
         SetupExisting(existing);
 
-        await _task.ExecuteAsync(new InstallPipelineArgs(new InstallPipelineData()), CancellationToken.None);
+        PipelineResult<InstallPipelineData> result = await _task.ExecuteAsync(new InstallPipelineArgs(new InstallPipelineData()), CancellationToken.None);
+
+        Assert.True(result.Success);
 
         Assert.Null(_created);
         Assert.Same(existing, _updated);
@@ -114,13 +119,33 @@ public class CreateUmbracoCommerceCheckoutDataTypesTaskTests
         };
         SetupExisting(existing);
 
-        await _task.ExecuteAsync(new InstallPipelineArgs(new InstallPipelineData()), CancellationToken.None);
+        PipelineResult<InstallPipelineData> result = await _task.ExecuteAsync(new InstallPipelineArgs(new InstallPipelineData()), CancellationToken.None);
+
+        Assert.True(result.Success);
 
         Assert.Null(_created);
         Assert.Same(existing, _updated);
         Assert.Same(_singleEditor, existing.Editor);
         Assert.Equal(SingleEditorUiAlias, existing.EditorUiAlias);
         AssertConfiguration(existing);
+    }
+
+    [Fact]
+    public async Task Missing_Single_Dropdown_Editor_Fails_Without_Touching_Data_Types()
+    {
+        var propertyEditors = new PropertyEditorCollection(new DataEditorCollection(() => [_flexibleEditor]));
+        var task = new CreateUmbracoCommerceCheckoutDataTypesTask(
+            Mock.Of<ILogger<CreateUmbracoCommerceCheckoutDataTypesTask>>(),
+            _dataTypeService.Object,
+            propertyEditors,
+            _serializer);
+
+        PipelineResult<InstallPipelineData> result = await task.ExecuteAsync(new InstallPipelineArgs(new InstallPipelineData()), CancellationToken.None);
+
+        Assert.False(result.Success);
+        Assert.IsType<InvalidOperationException>(result.Exception);
+        Assert.Null(_created);
+        Assert.Null(_updated);
     }
 
     private void SetupExisting(IDataType? existing) =>

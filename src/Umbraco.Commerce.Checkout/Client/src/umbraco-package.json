@@ -4,7 +4,7 @@
         {
             "name": "Umbraco Commerce Checkout Entry Point",
             "alias": "Umbraco.Commerce.Checkout.EntryPoint",
-            "type": "entryPoint",
+            "type": "backofficeEntryPoint",
             "js": "/App_Plugins/UmbracoCommerceCheckout/uccheckout.backoffice.js"
         }
     ],

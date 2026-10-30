@@ -49,7 +49,6 @@ extends:
       release: skip
     ${{ else }}:
       release: ${{ parameters.release }}
-    run_tests: skip # No test projects
     sbom_generate: ${{ parameters.sbom_generate }}
     # Release/hotfix branch builds still run the license check, but only release-* tags upload, so
     # Dependency-Track only lists released versions

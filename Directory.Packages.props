@@ -12,6 +12,11 @@
   <ItemGroup>
     <PackageVersion Include="Umbraco.Commerce.Cms.Startup" Version="[19.0.0-beta.1, 19.999.999)" />
     <PackageVersion Include="Umbraco.Cms.Core" Version="[19.0.0-beta1, 19.999.999)" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="Umbraco.Cms.Web.Website" Version="[19.0.0-beta1, 19.999.999)" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 </Project>

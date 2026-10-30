@@ -269,7 +269,7 @@ namespace Umbraco.Commerce.Checkout.Pipeline.Tasks
             }
 
             // Move to the dedicated folder
-            contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
+            await contentTypeService.MoveAsync(checkoutPageContentType.Key, checkoutContentTypeFolder!.Key);
 
             // Continue the pipeline
             return Ok();

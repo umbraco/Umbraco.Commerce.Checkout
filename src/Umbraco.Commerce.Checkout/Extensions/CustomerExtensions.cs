@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using Umbraco.Commerce.Checkout.Models;
 using Umbraco.Commerce.Core.Models;
+using Customer = Umbraco.Commerce.Checkout.Models.Customer;
+using CustomerAddress = Umbraco.Commerce.Checkout.Models.CustomerAddress;
 
 namespace Umbraco.Commerce.Checkout.Extensions;
 

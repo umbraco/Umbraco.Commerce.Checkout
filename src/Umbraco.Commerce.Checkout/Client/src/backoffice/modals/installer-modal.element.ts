@@ -65,7 +65,7 @@ export default class UccInstallerConfigModal extends UmbElementMixin(LitElement)
                 this.#notificationContext?.peek('positive', {
                     data: {
                         headline: 'Umbraco Commerce Checkout Installed',
-                        message: 'Umbraco Commerce Checkout successfully installed',
+                        message: 'Umbraco Commerce Checkout successfully installed. Its pages are unpublished: review their settings, then publish them.',
                     },
                 });
 

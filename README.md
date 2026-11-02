@@ -12,6 +12,12 @@ With Umbraco Commerce Checkout you can quickly and easily add a ready made, them
 
 This package uses the same versioning strategy with Umbraco Commerce. 
 
+## Installation
+
+To install the checkout, open the `Umbraco Commerce Checkout` dashboard in the `Settings` section of the backoffice and select the root node to install the checkout pages under.
+
+The checkout pages are created unpublished. Review their settings, then publish them.
+
 ## Working locally
 To fork and build your own Commerce Checkout package, you will need:
 * .NET 11 SDK (see `global.json`)

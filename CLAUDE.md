@@ -4,23 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Umbraco Commerce Checkout** is an add-on package for Umbraco Commerce that provides a ready-made, themeable, and responsive checkout flow. It is built as an ASP.NET Razor SDK project targeting .NET 8+ and Umbraco 16+.
+**Umbraco Commerce Checkout** is an add-on package for Umbraco Commerce that provides a ready-made, themeable, and responsive checkout flow. It is built as an ASP.NET Razor SDK project targeting .NET 11 and Umbraco 19+.
 
 This package follows the same versioning strategy as Umbraco Commerce and is part of the larger Umbraco Commerce ecosystem.
 
 ## Building the Project
 
 ### Prerequisites
-- .NET 10.0 SDK (see `global.json` for exact version)
+- .NET 11 SDK (exact version pinned in `global.json`, `rollForward: disable`)
 - Node.js 20+ for frontend development
-- Umbraco 16.0.0 or newer
-- Umbraco Commerce 17.0.0 or newer
+- Umbraco 19.0.0 or newer
+- Umbraco Commerce 19.0.0 or newer
 
 ### Build Commands
 
 **Build the entire solution:**
 ```bash
 dotnet build Umbraco.Commerce.Checkout.sln --configuration Release
+```
+
+**Run tests:**
+```bash
+dotnet test Umbraco.Commerce.Checkout.sln
 ```
 
 **Restore NuGet packages (locked mode):**
@@ -230,9 +235,9 @@ Umbraco.Commerce.Checkout.vLatest/
 ## Important Constraints
 
 - **Backwards Compatibility**: All development should prioritize backwards compatibility to minimize breaking changes
-- **Target Frameworks**: Multi-target .NET 8, 9, and 10 (check `.csproj` for current targets)
-- **Umbraco Version**: Targets Umbraco 17.x (beta currently)
-- **Commerce Version**: Requires Umbraco Commerce 17.x
+- **Target Frameworks**: .NET 11 (check `.csproj` for current targets)
+- **Umbraco Version**: Targets Umbraco 19.x (beta currently)
+- **Commerce Version**: Requires Umbraco Commerce 19.x
 
 ## CI/CD Pipeline
 

@@ -32,7 +32,7 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
             _contentService = contentService;
         }
 
-        [HttpGet("install")]
+        [HttpPost("install")]
         public async Task<object> InstallUmbracoCommerceCheckout(Guid? siteRootNodeId)
         {
             ArgumentNullException.ThrowIfNull(siteRootNodeId);

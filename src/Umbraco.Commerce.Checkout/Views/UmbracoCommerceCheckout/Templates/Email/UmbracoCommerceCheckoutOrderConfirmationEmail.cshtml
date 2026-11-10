@@ -131,7 +131,7 @@
                                             paymentCountry?.Name,
                                             paymentRegion != null ? paymentRegion.Name : null
                                             };
-                                                @Html.Raw(string.Join("<br />", billingParts.Where(x => !string.IsNullOrWhiteSpace(x))))
+                                                @Html.Raw(string.Join("<br />", billingParts.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => System.Net.WebUtility.HtmlEncode(x))))
                                             }
                                         </p>
                                         @if (Model.Properties[orderPropertyConfig.Billing.Contact.Telephone.Alias] != null)
@@ -155,7 +155,7 @@
                                             shippingCountry?.Name,
                                             shippingRegion != null ? shippingRegion.Name : null
                                             };
-                                                    @Html.Raw(string.Join("<br />", shippingParts.Where(x => !string.IsNullOrWhiteSpace(x))))
+                                                    @Html.Raw(string.Join("<br />", shippingParts.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => System.Net.WebUtility.HtmlEncode(x))))
                                                 }
                                             </p>
                                             @if (Model.Properties[orderPropertyConfig.Shipping.Contact.Telephone.Alias] != null)

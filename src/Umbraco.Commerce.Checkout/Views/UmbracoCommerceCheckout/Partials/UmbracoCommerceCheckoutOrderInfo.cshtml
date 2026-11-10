@@ -42,7 +42,7 @@
                     paymentCountryName,
                     paymentRegionName,
                     order.Properties[orderPropertyConfig.Billing.ZipCode.Alias]
-                }.Where(x => !x.IsNullOrWhiteSpace())))
+                }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => System.Net.WebUtility.HtmlEncode(x))))
             </p>
         </div>
         @if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
@@ -59,7 +59,7 @@
                         shippingCountryName,
                         shippingRegionName,
                         order.Properties[orderPropertyConfig.Shipping.ZipCode.Alias]
-                    }.Where(x => !x.IsNullOrWhiteSpace())))
+                    }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => System.Net.WebUtility.HtmlEncode(x))))
                 </p>
             </div>
         }

@@ -117,6 +117,11 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
                 await _commerceApi.Uow.ExecuteAsync(async uow =>
                 {
                     Core.Models.StoreReadOnly? store = CurrentPage!.GetStore();
+
+                    // Write under the store's configured aliases, so stores that rename these
+                    // properties still have them read back (e.g. when syncing customer addresses).
+                    Core.Models.OrderPropertyConfig propertyConfig = await _commerceApi.GetOrderPropertyConfigAsync(store.Alias);
+
                     Core.Models.Order order = await _commerceApi.GetCurrentOrderAsync(store.Id)
                         .AsWritableAsync(uow)
                         .SetPropertiesAsync(new Dictionary<string, string>
@@ -126,11 +131,11 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
 
                             { UmbracoCommerceConstants.Properties.Customer.FirstNamePropertyAlias, model.BillingAddress.FirstName },
                             { UmbracoCommerceConstants.Properties.Customer.LastNamePropertyAlias, model.BillingAddress.LastName },
-                            { "billingAddressLine1", model.BillingAddress.Line1 },
-                            { "billingAddressLine2", model.BillingAddress.Line2 },
-                            { "billingCity", model.BillingAddress.City },
-                            { "billingZipCode", model.BillingAddress.ZipCode },
-                            { "billingTelephone", model.BillingAddress.Telephone },
+                            { propertyConfig.Billing.AddressLine1.Alias, model.BillingAddress.Line1 },
+                            { propertyConfig.Billing.AddressLine2.Alias, model.BillingAddress.Line2 },
+                            { propertyConfig.Billing.City.Alias, model.BillingAddress.City },
+                            { propertyConfig.Billing.ZipCode.Alias, model.BillingAddress.ZipCode },
+                            { propertyConfig.Billing.Contact.Telephone.Alias, model.BillingAddress.Telephone },
                             { "comments", model.Comments },
                             { "ipAddress", GetIPAddress() }
                         })
@@ -140,14 +145,14 @@ namespace Umbraco.Commerce.Checkout.Web.Controllers
                     {
                         await order.SetPropertiesAsync(new Dictionary<string, string>
                         {
-                            { "shippingSameAsBilling", model.ShippingSameAsBilling ? "1" : "0" },
-                            { "shippingFirstName", model.ShippingSameAsBilling? model.BillingAddress.FirstName : model.ShippingAddress.FirstName },
-                            { "shippingLastName", model.ShippingSameAsBilling? model.BillingAddress.LastName : model.ShippingAddress.LastName },
-                            { "shippingAddressLine1", model.ShippingSameAsBilling? model.BillingAddress.Line1 : model.ShippingAddress.Line1 },
-                            { "shippingAddressLine2", model.ShippingSameAsBilling? model.BillingAddress.Line2 : model.ShippingAddress.Line2 },
-                            { "shippingCity", model.ShippingSameAsBilling? model.BillingAddress.City : model.ShippingAddress.City },
-                            { "shippingZipCode", model.ShippingSameAsBilling? model.BillingAddress.ZipCode : model.ShippingAddress.ZipCode },
-                            { "shippingTelephone", model.ShippingSameAsBilling? model.BillingAddress.Telephone : model.ShippingAddress.Telephone }
+                            { propertyConfig.Shipping.SameAsBilling.Alias, model.ShippingSameAsBilling ? "1" : "0" },
+                            { propertyConfig.Shipping.Contact.FirstName.Alias, model.ShippingSameAsBilling? model.BillingAddress.FirstName : model.ShippingAddress.FirstName },
+                            { propertyConfig.Shipping.Contact.LastName.Alias, model.ShippingSameAsBilling? model.BillingAddress.LastName : model.ShippingAddress.LastName },
+                            { propertyConfig.Shipping.AddressLine1.Alias, model.ShippingSameAsBilling? model.BillingAddress.Line1 : model.ShippingAddress.Line1 },
+                            { propertyConfig.Shipping.AddressLine2.Alias, model.ShippingSameAsBilling? model.BillingAddress.Line2 : model.ShippingAddress.Line2 },
+                            { propertyConfig.Shipping.City.Alias, model.ShippingSameAsBilling? model.BillingAddress.City : model.ShippingAddress.City },
+                            { propertyConfig.Shipping.ZipCode.Alias, model.ShippingSameAsBilling? model.BillingAddress.ZipCode : model.ShippingAddress.ZipCode },
+                            { propertyConfig.Shipping.Contact.Telephone.Alias, model.ShippingSameAsBilling? model.BillingAddress.Telephone : model.ShippingAddress.Telephone }
                         })
                          .SetShippingCountryRegionAsync(
                              model.ShippingSameAsBilling ? model.BillingAddress.Country : model.ShippingAddress.Country,

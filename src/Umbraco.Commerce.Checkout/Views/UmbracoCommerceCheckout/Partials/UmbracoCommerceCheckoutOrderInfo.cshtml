@@ -6,6 +6,9 @@
 
     var checkoutPage = currentPage.GetCheckoutPage();
 
+    var store = await UmbracoCommerceApi.Instance.GetStoreAsync(order.StoreId);
+    var orderPropertyConfig = await UmbracoCommerceApi.Instance.GetOrderPropertyConfigAsync(store.Alias);
+
     var paymentCountryName = order.PaymentInfo.CountryId.HasValue
         ? (await UmbracoCommerceApi.Instance.GetCountryAsync(order.PaymentInfo.CountryId.Value)).Name
         : null;
@@ -33,13 +36,13 @@
                 <strong>@order.CustomerInfo.FirstName @order.CustomerInfo.LastName</strong>
                 <br />
                 @Html.Raw(string.Join("<br />", new string[] {
-                    order.Properties["billingAddressLine1"],
-                    order.Properties["billingAddressLine2"],
-                    order.Properties["billingCity"],
+                    order.Properties[orderPropertyConfig.Billing.AddressLine1.Alias],
+                    order.Properties[orderPropertyConfig.Billing.AddressLine2.Alias],
+                    order.Properties[orderPropertyConfig.Billing.City.Alias],
                     paymentCountryName,
                     paymentRegionName,
-                    order.Properties["billingZipCode"]
-                }.Where(x => !x.IsNullOrWhiteSpace())))
+                    order.Properties[orderPropertyConfig.Billing.ZipCode.Alias]
+                }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => System.Net.WebUtility.HtmlEncode(x))))
             </p>
         </div>
         @if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
@@ -47,16 +50,16 @@
             <div class="flex-1 mx-2 w-full sm:w-1/2">
                 <h3 class="text-xl font-medium mb-4 break-words">@Umbraco.GetDictionaryValueOrDefault("UmbracoCommerceCheckout.OrderInfo.ShippingInformation", "Shipping Information")</h3>
                 <p class="">
-                    <strong>@order.Properties["shippingFirstName"] @order.Properties["shippingLastName"]</strong>
+                    <strong>@order.Properties[orderPropertyConfig.Shipping.Contact.FirstName.Alias] @order.Properties[orderPropertyConfig.Shipping.Contact.LastName.Alias]</strong>
                     <br />
                     @Html.Raw(string.Join("<br />", new string[] {
-                        order.Properties["shippingAddressLine1"],
-                        order.Properties["shippingAddressLine2"],
-                        order.Properties["shippingCity"],
+                        order.Properties[orderPropertyConfig.Shipping.AddressLine1.Alias],
+                        order.Properties[orderPropertyConfig.Shipping.AddressLine2.Alias],
+                        order.Properties[orderPropertyConfig.Shipping.City.Alias],
                         shippingCountryName,
                         shippingRegionName,
-                        order.Properties["shippingZipCode"]
-                    }.Where(x => !x.IsNullOrWhiteSpace())))
+                        order.Properties[orderPropertyConfig.Shipping.ZipCode.Alias]
+                    }.Where(x => !x.IsNullOrWhiteSpace()).Select(x => System.Net.WebUtility.HtmlEncode(x))))
                 </p>
             </div>
         }

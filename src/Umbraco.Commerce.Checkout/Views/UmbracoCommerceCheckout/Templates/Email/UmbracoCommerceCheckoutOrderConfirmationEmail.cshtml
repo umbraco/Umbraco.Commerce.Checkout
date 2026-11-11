@@ -3,6 +3,7 @@
 @{
     // Get order entities
     var store = await UmbracoCommerceApi.GetStoreAsync(Model.StoreId);
+    var orderPropertyConfig = await UmbracoCommerceApi.GetOrderPropertyConfigAsync(store.Alias);
     var paymentMethod = Model.PaymentInfo.PaymentMethodId.HasValue
         ? await UmbracoCommerceApi.GetPaymentMethodAsync(Model.PaymentInfo.PaymentMethodId.Value)
         : null;
@@ -123,19 +124,19 @@
                                                 var billingParts = new[]
                                                 {
                                             $"{Model.CustomerInfo.FirstName} {Model.CustomerInfo.LastName}".Trim(),
-                                            Model.Properties["billingAddressLine1"],
-                                            Model.Properties["billingAddressLine2"],
-                                            Model.Properties["billingCity"],
-                                            Model.Properties["billingZipCode"],
+                                            Model.Properties[orderPropertyConfig.Billing.AddressLine1.Alias],
+                                            Model.Properties[orderPropertyConfig.Billing.AddressLine2.Alias],
+                                            Model.Properties[orderPropertyConfig.Billing.City.Alias],
+                                            Model.Properties[orderPropertyConfig.Billing.ZipCode.Alias],
                                             paymentCountry?.Name,
                                             paymentRegion != null ? paymentRegion.Name : null
                                             };
-                                                @Html.Raw(string.Join("<br />", billingParts.Where(x => !string.IsNullOrWhiteSpace(x))))
+                                                @Html.Raw(string.Join("<br />", billingParts.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => System.Net.WebUtility.HtmlEncode(x))))
                                             }
                                         </p>
-                                        @if (Model.Properties["billingTelephone"] != null)
+                                        @if (Model.Properties[orderPropertyConfig.Billing.Contact.Telephone.Alias] != null)
                                         {
-                                            <p style="margin: 0;padding-top: 10px;">Tel: @Model.Properties["billingTelephone"]</p>
+                                            <p style="margin: 0;padding-top: 10px;">Tel: @Model.Properties[orderPropertyConfig.Billing.Contact.Telephone.Alias]</p>
                                         }
                                     </td>
                                     @if (checkoutPage.Value<bool>("uccCollectShippingInfo"))
@@ -146,20 +147,20 @@
                                                 @{
                                                     var shippingParts = new[]
                                                     {
-                                            $"{Model.Properties["shippingFirstName"]} {Model.Properties["shippingLastName"]}".Trim(),
-                                            Model.Properties["shippingAddressLine1"],
-                                            Model.Properties["shippingAddressLine2"],
-                                            Model.Properties["shippingCity"],
-                                            Model.Properties["shippingZipCode"],
+                                            $"{Model.Properties[orderPropertyConfig.Shipping.Contact.FirstName.Alias]} {Model.Properties[orderPropertyConfig.Shipping.Contact.LastName.Alias]}".Trim(),
+                                            Model.Properties[orderPropertyConfig.Shipping.AddressLine1.Alias],
+                                            Model.Properties[orderPropertyConfig.Shipping.AddressLine2.Alias],
+                                            Model.Properties[orderPropertyConfig.Shipping.City.Alias],
+                                            Model.Properties[orderPropertyConfig.Shipping.ZipCode.Alias],
                                             shippingCountry?.Name,
                                             shippingRegion != null ? shippingRegion.Name : null
                                             };
-                                                    @Html.Raw(string.Join("<br />", shippingParts.Where(x => !string.IsNullOrWhiteSpace(x))))
+                                                    @Html.Raw(string.Join("<br />", shippingParts.Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => System.Net.WebUtility.HtmlEncode(x))))
                                                 }
                                             </p>
-                                            @if (Model.Properties["shippingTelephone"] != null)
+                                            @if (Model.Properties[orderPropertyConfig.Shipping.Contact.Telephone.Alias] != null)
                                             {
-                                                <p style="margin: 0;padding-top: 10px;">Tel: @Model.Properties["shippingTelephone"]</p>
+                                                <p style="margin: 0;padding-top: 10px;">Tel: @Model.Properties[orderPropertyConfig.Shipping.Contact.Telephone.Alias]</p>
                                             }
                                         </td>
                                     }

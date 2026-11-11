@@ -31,7 +31,7 @@ public static class CustomerExtensions
         // This extension method should not be used in a context where order is null.
         ArgumentNullException.ThrowIfNull(order);
 
-        return order.Properties["shippingSameAsBilling"] == "1"
+        return order.Properties[orderPropertyConfig.Shipping.SameAsBilling.Alias] == "1"
             ? order.GetBillingAddress(orderPropertyConfig)
             : new CustomerAddress(
                 order.Properties[orderPropertyConfig.Shipping.AddressLine1.Alias],
